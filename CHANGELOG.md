@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.3]
+
+- Transactions data layer: JSON store (atomic temp-file writes), repository
+  with live StateFlow, real markers from stored transactions
+- No new UI in this step
+
 ## [0.0.2]
 
 - Smaller APK: R8 minify + resource shrinking, no icon library (6 own vector

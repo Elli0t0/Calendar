@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.MarkerProvider
+import io.github.elli0t0.calendar.data.TxRepository
+import io.github.elli0t0.calendar.data.toDayMarker
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
@@ -74,6 +77,9 @@ fun CalendarScreen(
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
+    // Collecting the flow here makes the screen recompose whenever
+    // transactions change, so cells and the card below re-read fresh markers.
+    val transactions by TxRepository.items.collectAsState()
     val today = remember { LocalDate.now() }
     var selected by remember { mutableStateOf(today) }
     val baseJalali = remember { Jalali.toJalali(today) }
@@ -176,7 +182,9 @@ fun CalendarScreen(
             label = "selectedDay"
         ) { date ->
             val jalali = Jalali.toJalali(date)
-            val markers = markerProvider.markersFor(date)
+            val markers = transactions
+                .filter { it.epochDay == date.toEpochDay() }
+                .map { it.toDayMarker() }
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(28.dp),

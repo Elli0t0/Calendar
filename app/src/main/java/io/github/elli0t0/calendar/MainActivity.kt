@@ -38,8 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.elli0t0.calendar.data.EmptyMarkerProvider
-import io.github.elli0t0.calendar.data.FakeMarkerProvider
+import io.github.elli0t0.calendar.data.TransactionMarkerProvider
+import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.ui.calendar.CalendarScreen
 import io.github.elli0t0.calendar.ui.nav.PlaceholderScreen
 import io.github.elli0t0.calendar.ui.nav.Tab
@@ -57,13 +57,12 @@ private fun tabIcon(tab: Tab): Int = when (tab) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        TxRepository.init(applicationContext)
         setContent {
             CalendarTheme {
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                     var tab by remember { mutableStateOf(Tab.CALENDAR) }
-                    val markerProvider = remember {
-                        if (BuildConfig.DEBUG) FakeMarkerProvider() else EmptyMarkerProvider()
-                    }
+                    val markerProvider = remember { TransactionMarkerProvider() }
                     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
                     Scaffold(
                         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
