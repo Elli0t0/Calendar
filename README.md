@@ -37,3 +37,19 @@ the 4 secrets above before the next release.
 
 `versionName` lives in `gradle.properties` (`VERSION_MAJOR.MINOR.PATCH`, numeric
 order: 0.0.1, 0.0.2, …). `versionCode` is the GitHub run number, set by CI.
+
+## Size rules
+
+Keep the APK small — it is a deliberate feature, not an accident:
+
+- Release builds always use R8 minify + resource shrinking (`isMinifyEnabled`,
+  `isShrinkResources`); keep rules only when a release-only crash proves one
+  is needed, never blanket keeps.
+- No icon libraries: icons are small own vector drawables in `res/drawable`
+  only, loaded with `painterResource`.
+- No new dependency unless truly required; remove a dependency when the code
+  stops using it.
+- Only the `fa` locale is kept (`androidResources.localeFilters`).
+- No raster images when a vector can do the job; no fonts, no sample files.
+- The CI log prints the APK size after every build — if a version grows the
+  APK by more than ~1 MB, say why in the change list.
