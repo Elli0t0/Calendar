@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">تقویم</string>
+    <string name="tab_calendar">تقویم</string>
+    <string name="tab_transactions">تراکنش‌ها</string>
+    <string name="tab_installments">اقساط</string>
+    <string name="tab_stats">آمار</string>
+    <string name="today">امروز</string>
+    <string name="previous_month">ماه قبل</string>
+    <string name="next_month">ماه بعد</string>
+    <string name="no_events">رویدادی برای این روز نیست</string>
+    <string name="coming_soon">به‌زودی</string>
+</resources>
