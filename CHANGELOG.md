@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.10]
+
+- Task 4, Month screen: matches the reference. New theme/Dimens.kt holds
+  the shared sizes and radii (no more magic numbers in the screens).
+  Header title 24sp -> 20sp; weekday letters 13sp -> 12sp; grid gaps
+  3dp -> 6dp; day cells are plain numbers now (the tile background and
+  border are gone) with the selected/today day in a 28dp filled box and
+  4dp marker bands; the day header is one line ("15 Monday", 20sp Bold)
+  with the Jalali month + year and the Gregorian date on a muted line.
+  The bottom pill shows the day's first event (tap it to edit, tap +
+  to add) and falls back to "Add on ..." when the day is empty.
+  Swipe up on the month grid collapses it to the selected week row,
+  swipe down expands it back to the full month.
+
 ## [0.1.9]
 
 - Task 3: keyboard covering the bottom sheets. MainActivity has

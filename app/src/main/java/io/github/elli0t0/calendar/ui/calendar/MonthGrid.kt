@@ -9,11 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.FirstDay
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
+import io.github.elli0t0.calendar.ui.theme.Dimens
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.JalaliDate
@@ -80,12 +80,12 @@ fun MonthGrid(
     val cells = monthCells(year, month, settings.firstDay)
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(3.dp)
+        verticalArrangement = Arrangement.spacedBy(Dimens.GridGap)
     ) {
         cells.chunked(7).forEach { week ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.GridGap)
             ) {
                 week.forEach { date ->
                     Box(modifier = Modifier.weight(1f)) {
@@ -105,6 +105,45 @@ fun MonthGrid(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/** One row of DayCells for the selected week (the collapsed month). */
+@Composable
+fun CollapsedWeekRow(
+    selected: LocalDate,
+    today: LocalDate,
+    firstDay: FirstDay,
+    markerProvider: MarkerProvider,
+    onSelect: (LocalDate) -> Unit,
+    onLongClick: (LocalDate) -> Unit,
+) {
+    val settings by AppSettings.settings.collectAsState()
+    val weekStart = weekStartFor(selected, firstDay)
+    val selectedJalali = Jalali.toJalali(selected)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.GridGap)
+    ) {
+        (0..6).forEach { offset ->
+            val date = weekStart.plusDays(offset.toLong())
+            Box(modifier = Modifier.weight(1f)) {
+                val jalali = Jalali.toJalali(date)
+                DayCell(
+                    jalali = jalali,
+                    gregorian = date,
+                    isToday = date == today,
+                    isSelected = date == selected,
+                    isFriday = PersianNames.isFriday(date),
+                    inCurrentMonth = jalali.month == selectedJalali.month,
+                    markers = markerProvider.markersFor(date),
+                    onClick = { onSelect(date) },
+                    onLongClick = { onLongClick(date) },
+                    showGregorian = settings.showGregorianInTiles,
+                    markerStyle = settings.markerStyle
+                )
             }
         }
     }

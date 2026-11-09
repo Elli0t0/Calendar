@@ -2,7 +2,6 @@ package io.github.elli0t0.calendar.ui.calendar
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,9 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.data.DayMarker
 import io.github.elli0t0.calendar.data.MarkerStyle
+import io.github.elli0t0.calendar.ui.theme.Dimens
 import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.jalali.JalaliDate
 import io.github.elli0t0.calendar.jalali.toPersianDigits
@@ -86,16 +85,7 @@ fun DayCell(
     val scheme = MaterialTheme.colorScheme
     var cellModifier = Modifier
         .aspectRatio(0.7f)
-        .clip(RoundedCornerShape(10.dp))
-        .background(scheme.surfaceContainerLow)
         .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-    if (isSelected) {
-        cellModifier = cellModifier.border(
-            1.5.dp,
-            scheme.onSurface.copy(alpha = 0.6f),
-            RoundedCornerShape(10.dp)
-        )
-    }
     if (!inCurrentMonth) {
         cellModifier = cellModifier.alpha(0.35f)
     }
@@ -116,39 +106,39 @@ fun DayCell(
     ) {
         if (isSelected) {
             Box(
-                modifier = Modifier.size(26.dp)
-                    .background(scheme.onSurface, RoundedCornerShape(8.dp)),
+                modifier = Modifier.size(Dimens.DayNumberBox)
+                    .background(scheme.onSurface, RoundedCornerShape(Dimens.DayNumberBoxCorner)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = jalali.day.toPersianDigits(),
                     color = scheme.background,
-                    fontSize = 15.sp,
+                    fontSize = Dimens.DayNumber,
                     fontWeight = FontWeight.SemiBold
                 )
             }
         } else if (isToday) {
             Box(
-                modifier = Modifier.size(26.dp)
-                    .background(scheme.primary, RoundedCornerShape(8.dp)),
+                modifier = Modifier.size(Dimens.DayNumberBox)
+                    .background(scheme.primary, RoundedCornerShape(Dimens.DayNumberBoxCorner)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = jalali.day.toPersianDigits(),
                     color = scheme.onPrimary,
-                    fontSize = 15.sp,
+                    fontSize = Dimens.DayNumber,
                     fontWeight = FontWeight.SemiBold
                 )
             }
         } else {
             Box(
-                modifier = Modifier.size(26.dp),
+                modifier = Modifier.size(Dimens.DayNumberBox),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = jalali.day.toPersianDigits(),
                     color = numberColor,
-                    fontSize = 15.sp,
+                    fontSize = Dimens.DayNumber,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -164,8 +154,8 @@ fun DayCell(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
+                        .height(Dimens.MarkerHeight)
+                        .clip(RoundedCornerShape(Dimens.MarkerCorner))
                         .background(markerColor(marker.type, marker.colorIndex, markerStyle))
                 )
             }
@@ -175,7 +165,7 @@ fun DayCell(
             Text(
                 text = gregorian.dayOfMonth.toPersianDigits(),
                 color = scheme.onSurfaceVariant,
-                fontSize = 11.sp
+                fontSize = Dimens.GregorianNumber
             )
         }
     }

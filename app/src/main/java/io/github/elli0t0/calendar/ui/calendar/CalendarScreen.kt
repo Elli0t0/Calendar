@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +56,7 @@ import io.github.elli0t0.calendar.data.CalendarViewMode
 import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
+import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.jalali.Jalali
@@ -101,6 +104,8 @@ fun CalendarScreen(
     val settings by AppSettings.settings.collectAsState()
     val today = remember { LocalDate.now() }
     var selected by remember { mutableStateOf(today) }
+    // Month grid collapsed to the selected week (swipe up), or full month.
+    var monthCollapsed by remember { mutableStateOf(false) }
     var showSheet by remember { mutableStateOf(false) }
     var editingTx by remember { mutableStateOf<Transaction?>(null) }
     var showInstSheet by remember { mutableStateOf(false) }
@@ -144,7 +149,7 @@ fun CalendarScreen(
             } else {
                 null
             },
-            24.sp
+            Dimens.HeaderTitle
         )
         CalendarViewMode.DAY -> Triple(
             shortJalaliDate(selected),
@@ -164,7 +169,7 @@ fun CalendarScreen(
             } else {
                 null
             },
-            24.sp
+            Dimens.HeaderTitle
         )
         CalendarViewMode.WEEK -> Triple(
             "${PersianNames.jalaliMonthName(selectedJalali.month)} " +
@@ -173,12 +178,12 @@ fun CalendarScreen(
                 weekStartFor(selected, settings.firstDay),
                 weekStartFor(selected, settings.firstDay).plusDays(6)
             ),
-            24.sp
+            Dimens.HeaderTitle
         )
         CalendarViewMode.YEAR -> Triple(
             yearViewYear.toPersianDigits(),
             null,
-            24.sp
+            Dimens.HeaderTitle
         )
     }
 
@@ -302,6 +307,30 @@ fun CalendarScreen(
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
 
+        // Swipe up collapses the month to the selected week, swipe down
+        // expands it again (like the reference).
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    var totalDrag = 0f
+                    detectVerticalDragGestures(
+                        onDragEnd = { totalDrag = 0f },
+                        onDragCancel = { totalDrag = 0f },
+                        onVerticalDrag = { _, dragAmount ->
+                            totalDrag += dragAmount
+                            if (totalDrag < -40) {
+                                monthCollapsed = true
+                                totalDrag = 0f
+                            } else if (totalDrag > 40) {
+                                monthCollapsed = false
+                                totalDrag = 0f
+                            }
+                        }
+                    )
+                }
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
         // Weekday row, starting on the chosen first day. Friday letter in red.
         Row(modifier = Modifier.fillMaxWidth()) {
             orderedWeekdayLetters(PersianNames.weekdayLetters(), settings.firstDay)
@@ -312,7 +341,7 @@ fun CalendarScreen(
                     ) {
                         Text(
                             text = letter,
-                            fontSize = 13.sp,
+                            fontSize = Dimens.WeekdayLetter,
                             fontWeight = FontWeight.Normal,
                             color = if (index == fridayIndex(settings.firstDay)) {
                                 Color(0xFFE53935)
@@ -326,17 +355,12 @@ fun CalendarScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Month grid with swipe.
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxWidth()
-        ) { page ->
-            val month = addJalaliMonths(baseJalali.year, baseJalali.month, page - 600)
-            MonthGrid(
-                year = month.first,
-                month = month.second,
-                today = today,
+        if (monthCollapsed) {
+            // One row: the selected week only.
+            CollapsedWeekRow(
                 selected = selected,
+                today = today,
+                firstDay = settings.firstDay,
                 markerProvider = markerProvider,
                 onSelect = { selected = it },
                 onLongClick = { date ->
@@ -345,6 +369,29 @@ fun CalendarScreen(
                     showSheet = true
                 }
             )
+        } else {
+            // Month grid with swipe.
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth()
+            ) { page ->
+                val month = addJalaliMonths(baseJalali.year, baseJalali.month, page - 600)
+                MonthGrid(
+                    year = month.first,
+                    month = month.second,
+                    today = today,
+                    selected = selected,
+                    markerProvider = markerProvider,
+                    onSelect = { selected = it },
+                    onLongClick = { date ->
+                        selected = date
+                        editingTx = null
+                        showSheet = true
+                    }
+                )
+            }
+        }
+            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -357,36 +404,21 @@ fun CalendarScreen(
         ) { date ->
             val jalali = Jalali.toJalali(date)
             Column(modifier = Modifier.fillMaxWidth()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = jalali.day.toPersianDigits(),
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = scheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = PersianNames.weekdayName(date),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = scheme.onSurface
-                        )
-                        Text(
-                            text = "${PersianNames.jalaliMonthName(jalali.month)} ${jalali.year.toPersianDigits()}",
-                            fontSize = 14.sp,
-                            color = scheme.onSurfaceVariant
-                        )
-                    }
-                }
                 Text(
-                    text = stringResource(
-                        R.string.date_gregorian,
-                        date.dayOfMonth.toPersianDigits(),
-                        PersianNames.gregorianMonthName(date.monthValue),
-                        date.year.toPersianDigits()
-                    ),
-                    fontSize = 14.sp,
+                    text = "${jalali.day.toPersianDigits()} ${PersianNames.weekdayName(date)}",
+                    fontSize = Dimens.DayHeader,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.onSurface
+                )
+                Text(
+                    text = "${PersianNames.jalaliMonthName(jalali.month)} ${jalali.year.toPersianDigits()} · " +
+                        stringResource(
+                            R.string.date_gregorian,
+                            date.dayOfMonth.toPersianDigits(),
+                            PersianNames.gregorianMonthName(date.monthValue),
+                            date.year.toPersianDigits()
+                        ),
+                    fontSize = Dimens.DayHeaderMuted,
                     color = scheme.onSurfaceVariant
                 )
                 DayEvents(
@@ -455,35 +487,73 @@ fun CalendarScreen(
         }
         // Add pill: anchored to the bottom of the screen, over the scrolling
         // content. Not in Year view, where it would cover the last months.
+        // Like the reference it shows the day's first event (tap it to edit)
+        // and a + to add; with no event it is just the Add button.
         if (settings.viewMode != CalendarViewMode.YEAR) {
+        val firstMarker = markerProvider.markersFor(selected).firstOrNull()
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
                 .padding(bottom = 16.dp)
-                .height(56.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(scheme.surfaceVariant)
-                .clickable { editingTx = null; showSheet = true }
-                .padding(horizontal = 20.dp),
+                .height(Dimens.PillHeight)
+                .clip(RoundedCornerShape(Dimens.PillCorner))
+                .background(scheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(
-                        R.string.tx_add_on_day,
-                        Jalali.toJalali(selected).day.toPersianDigits(),
-                        PersianNames.jalaliMonthName(Jalali.toJalali(selected).month)
-                    ),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = scheme.onSurface
-                )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (firstMarker != null) {
+                    Text(
+                        text = firstMarker.title,
+                        fontSize = Dimens.PillText,
+                        fontWeight = FontWeight.Bold,
+                        color = scheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                when (firstMarker.type) {
+                                    MarkerType.INCOME, MarkerType.EXPENSE -> {
+                                        transactions.firstOrNull { it.id == firstMarker.refId }
+                                            ?.let { editingTx = it; showSheet = true }
+                                    }
+                                    MarkerType.INSTALLMENT -> {
+                                        installments.firstOrNull { it.id == firstMarker.refId }
+                                            ?.let { editingInst = it; showInstSheet = true }
+                                    }
+                                }
+                            }
+                    )
+                } else {
+                    Text(
+                        text = stringResource(
+                            R.string.tx_add_on_day,
+                            Jalali.toJalali(selected).day.toPersianDigits(),
+                            PersianNames.jalaliMonthName(Jalali.toJalali(selected).month)
+                        ),
+                        fontSize = Dimens.PillText,
+                        fontWeight = FontWeight.Bold,
+                        color = scheme.onSurface,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { editingTx = null; showSheet = true }
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    painter = painterResource(R.drawable.ic_add),
-                    contentDescription = null,
-                    tint = scheme.onSurface
-                )
+                IconButton(onClick = { editingTx = null; showSheet = true }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add),
+                        contentDescription = null,
+                        tint = scheme.onSurface
+                    )
+                }
             }
         }
         }
