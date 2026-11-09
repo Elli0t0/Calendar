@@ -3,6 +3,7 @@ package io.github.elli0t0.calendar.ui.transactions
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,20 +14,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +39,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,20 +49,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.data.TxType
-import io.github.elli0t0.calendar.jalali.Jalali
-import io.github.elli0t0.calendar.jalali.JalaliDate
-import io.github.elli0t0.calendar.jalali.PersianNames
+import io.github.elli0t0.calendar.ui.calendar.markerColor
 import io.github.elli0t0.calendar.ui.common.formatGroupedDigits
 import io.github.elli0t0.calendar.ui.common.fullJalaliDate
 import io.github.elli0t0.calendar.ui.common.normalizeDigits
-import io.github.elli0t0.calendar.ui.common.toPersianDigits
+import io.github.elli0t0.calendar.ui.theme.EventPalette
 import java.time.LocalDate
-
-private const val MIN_YEAR = 1380
-private const val MAX_YEAR = 1450
 
 private val IncomeGreen = Color(0xFF43A047)
 private val ExpenseRed = Color(0xFFE53935)
@@ -71,15 +74,23 @@ fun TxSheet(
     var title by remember { mutableStateOf(initial?.title ?: "") }
     var digits by remember { mutableStateOf(initial?.amount?.toString() ?: "") }
     var date by remember { mutableStateOf(initial?.let { LocalDate.ofEpochDay(it.epochDay) } ?: initialDate) }
+    var note by remember { mutableStateOf(initial?.note ?: "") }
+    var colorIndex by remember { mutableStateOf(initial?.colorIndex ?: -1) }
     var showDateDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val scheme = MaterialTheme.colorScheme
     val amount = digits.toLongOrNull() ?: 0L
     val canSave = title.isNotBlank() && amount > 0
+    val titleFocus = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        if (initial == null) titleFocus.requestFocus()
+    }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp)
                 .imePadding()
         ) {
@@ -111,13 +122,16 @@ fun TxSheet(
                 onValueChange = { title = it },
                 label = { Text(stringResource(R.string.tx_title)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(titleFocus)
             )
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = formatGroupedDigits(digits),
                 onValueChange = { digits = normalizeDigits(it) },
                 label = { Text(stringResource(R.string.tx_amount)) },
+                suffix = { Text(stringResource(R.string.tx_toman)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -140,18 +154,49 @@ fun TxSheet(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(text = fullJalaliDate(date), fontSize = 16.sp, color = scheme.onSurface)
             }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ColorCircle(
+                    color = markerColor(if (type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE),
+                    selected = colorIndex == -1,
+                    onClick = { colorIndex = -1 }
+                )
+                EventPalette.forEachIndexed { index, paletteColor ->
+                    ColorCircle(
+                        color = paletteColor,
+                        selected = colorIndex == index,
+                        onClick = { colorIndex = index }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
+                value = note,
+                onValueChange = { note = it },
+                label = { Text(stringResource(R.string.tx_note)) },
+                maxLines = 4,
+                modifier = Modifier.fillMaxWidth()
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     if (initial == null) {
-                        TxRepository.add(type, title.trim(), amount, date)
+                        TxRepository.add(type, title.trim(), amount, date, note.trim(), colorIndex)
                     } else {
                         TxRepository.update(
                             initial.copy(
                                 type = type,
                                 title = title.trim(),
                                 amount = amount,
-                                epochDay = date.toEpochDay()
+                                epochDay = date.toEpochDay(),
+                                note = note.trim(),
+                                colorIndex = colorIndex
                             )
                         )
                     }
@@ -164,20 +209,48 @@ fun TxSheet(
             }
             if (initial != null) {
                 Spacer(modifier = Modifier.height(8.dp))
-                TextButton(
-                    onClick = {
-                        TxRepository.delete(initial.id)
-                        onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.tx_delete), color = ExpenseRed)
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = {
+                            TxRepository.add(type, title.trim(), amount, date, note.trim(), colorIndex)
+                            onDismiss()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(R.string.tx_copy))
+                    }
+                    TextButton(
+                        onClick = { showDeleteConfirm = true },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(R.string.tx_delete), color = ExpenseRed)
+                    }
+                }
+                if (showDeleteConfirm) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteConfirm = false },
+                        title = { Text(stringResource(R.string.tx_delete_confirm)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                TxRepository.delete(initial.id)
+                                showDeleteConfirm = false
+                                onDismiss()
+                            }) {
+                                Text(stringResource(R.string.tx_delete), color = ExpenseRed)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDeleteConfirm = false }) {
+                                Text(stringResource(R.string.tx_dismiss))
+                            }
+                        }
+                    )
                 }
             }
         }
     }
     if (showDateDialog) {
-        JalaliDatePickerDialog(
+        JalaliDatePicker(
             current = date,
             onDismiss = { showDateDialog = false },
             onConfirm = { date = it; showDateDialog = false }
@@ -209,97 +282,25 @@ private fun RowScope.TypeChip(
     }
 }
 
+/** One color choice: a 32dp circle, with a ring and a check when selected. */
 @Composable
-private fun JalaliDatePickerDialog(
-    current: LocalDate,
-    onDismiss: () -> Unit,
-    onConfirm: (LocalDate) -> Unit,
-) {
-    val start = Jalali.toJalali(current)
-    var year by remember { mutableStateOf(start.year) }
-    var month by remember { mutableStateOf(start.month) }
-    var day by remember { mutableStateOf(start.day) }
-    fun clampDay() {
-        day = minOf(day, Jalali.monthLength(year, month))
-    }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.tx_pick_date)) },
-        text = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                PickerColumn(
-                    value = toPersianDigits(day.toString()),
-                    onUp = { if (day < Jalali.monthLength(year, month)) day++ },
-                    onDown = { if (day > 1) day-- }
-                )
-                PickerColumn(
-                    value = PersianNames.jalaliMonthName(month),
-                    onUp = {
-                        if (month == 12) {
-                            month = 1
-                            year = minOf(year + 1, MAX_YEAR)
-                        } else {
-                            month++
-                        }
-                        clampDay()
-                    },
-                    onDown = {
-                        if (month == 1) {
-                            month = 12
-                            year = maxOf(year - 1, MIN_YEAR)
-                        } else {
-                            month--
-                        }
-                        clampDay()
-                    }
-                )
-                PickerColumn(
-                    value = toPersianDigits(year.toString()),
-                    onUp = {
-                        if (year < MAX_YEAR) {
-                            year++
-                            clampDay()
-                        }
-                    },
-                    onDown = {
-                        if (year > MIN_YEAR) {
-                            year--
-                            clampDay()
-                        }
-                    }
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(Jalali.toGregorian(JalaliDate(year, month, day))) }) {
-                Text(stringResource(R.string.tx_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.tx_cancel))
-            }
-        }
-    )
-}
-
-@Composable
-private fun PickerColumn(value: String, onUp: () -> Unit, onDown: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        IconButton(onClick = onUp) {
+private fun ColorCircle(color: Color, selected: Boolean, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(color)
+            .then(if (selected) Modifier.border(2.dp, scheme.onSurface, CircleShape) else Modifier)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (selected) {
             Icon(
-                painter = painterResource(R.drawable.ic_arrow_up),
-                contentDescription = null
-            )
-        }
-        Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        IconButton(onClick = onDown) {
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_down),
-                contentDescription = null
+                painter = painterResource(R.drawable.ic_check),
+                contentDescription = null,
+                tint = scheme.inverseOnSurface,
+                modifier = Modifier.size(18.dp)
             )
         }
     }

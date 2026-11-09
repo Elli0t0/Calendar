@@ -13,7 +13,7 @@
     <string name="tx_new">تراکنش جدید</string>
     <string name="tx_edit">ویرایش تراکنش</string>
     <string name="tx_title">عنوان</string>
-    <string name="tx_amount">مبلغ (تومان)</string>
+    <string name="tx_amount">مبلغ</string>
     <string name="tx_income">درآمد</string>
     <string name="tx_expense">هزینه</string>
     <string name="tx_balance">موجودی</string>
@@ -38,4 +38,9 @@
     <string name="stats_installment_word">قسط</string>
     <string name="menu">منو</string>
     <string name="tx_add_on_day">افزودن در %1$s %2$s</string>
+    <string name="tx_copy">کپی</string>
+    <string name="tx_note">یادداشت</string>
+    <string name="tx_toman">تومان</string>
+    <string name="tx_dismiss">انصراف</string>
+    <string name="tx_delete_confirm">حذف شود؟</string>
 </resources>

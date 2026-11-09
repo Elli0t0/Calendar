@@ -14,6 +14,9 @@ data class Transaction(
     val title: String,
     val amount: Long,
     val epochDay: Long,
+    val note: String = "",
+    /** Index into EventPalette, or -1 to use the type color. */
+    val colorIndex: Int = -1,
 )
 
 internal fun Transaction.toJson(): JSONObject = JSONObject().apply {
@@ -22,6 +25,8 @@ internal fun Transaction.toJson(): JSONObject = JSONObject().apply {
     put("title", title)
     put("amount", amount)
     put("epochDay", epochDay)
+    put("note", note)
+    put("colorIndex", colorIndex)
 }
 
 internal fun JSONObject.toTransaction(): Transaction = Transaction(
@@ -29,5 +34,7 @@ internal fun JSONObject.toTransaction(): Transaction = Transaction(
     type = TxType.valueOf(getString("type")),
     title = getString("title"),
     amount = getLong("amount"),
-    epochDay = getLong("epochDay")
+    epochDay = getLong("epochDay"),
+    note = optString("note", ""),
+    colorIndex = optInt("colorIndex", -1)
 )

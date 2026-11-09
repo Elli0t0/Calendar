@@ -43,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
@@ -271,15 +272,25 @@ fun CalendarScreen(
                                     .width(4.dp)
                                     .height(20.dp)
                                     .clip(RoundedCornerShape(2.dp))
-                                    .background(markerColor(marker.type))
+                                    .background(markerColor(marker.type, marker.colorIndex))
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = marker.title,
-                                fontSize = 15.sp,
-                                color = scheme.onSurface,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = marker.title,
+                                    fontSize = 15.sp,
+                                    color = scheme.onSurface
+                                )
+                                if (tx != null && tx.note.isNotBlank()) {
+                                    Text(
+                                        text = tx.note,
+                                        fontSize = 13.sp,
+                                        color = scheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
                             if (marker.amount != null) {
                                 Text(
                                     text = "${marker.amount.toPersianDigits()} تومان",

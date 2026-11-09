@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.10]
+
+- Event sheet, stage 1: transactions store a note and a color (8-color
+  palette, default = type color); old data files load unchanged
+- Sheet: title auto-focuses when adding, amount has a تومان suffix, 9
+  color circles with a ring and check on the selected one, note field
+  (max 4 lines), copy and delete side by side in edit mode with a
+  «حذف شود؟» confirmation, sheet scrolls with the keyboard
+- Date picker is now a month-grid dialog (prev/next across years, today
+  outlined, امروز / انصراف / تأیید)
+- Day cards and the list show the event color on the side bar and the
+  note under the title
+
 ## [0.0.9]
 
 - Color fix: full Material3 schemes for dark and light (no baseline

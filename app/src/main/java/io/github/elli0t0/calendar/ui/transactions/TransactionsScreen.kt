@@ -36,14 +36,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.data.TxType
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
+import io.github.elli0t0.calendar.ui.calendar.markerColor
 import io.github.elli0t0.calendar.ui.common.formatAmount
 import io.github.elli0t0.calendar.ui.common.toPersianDigits
 import java.time.LocalDate
@@ -216,6 +219,10 @@ private fun RowScope.SummaryItem(label: String, value: Long, color: Color, modif
 private fun TxRow(tx: Transaction, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val color = if (tx.type == TxType.INCOME) IncomeGreen else ExpenseRed
+    val barColor = markerColor(
+        if (tx.type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE,
+        tx.colorIndex
+    )
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
@@ -233,15 +240,25 @@ private fun TxRow(tx: Transaction, onClick: () -> Unit) {
                     .width(4.dp)
                     .height(40.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(color)
+                    .background(barColor)
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = tx.title,
-                fontSize = 16.sp,
-                color = scheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tx.title,
+                    fontSize = 16.sp,
+                    color = scheme.onSurface
+                )
+                if (tx.note.isNotBlank()) {
+                    Text(
+                        text = tx.note,
+                        fontSize = 13.sp,
+                        color = scheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
             Text(
                 text = formatAmount(tx.amount),
                 fontSize = 15.sp,

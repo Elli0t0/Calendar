@@ -6,7 +6,8 @@ fun Transaction.toDayMarker(): DayMarker = DayMarker(
     type = if (type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE,
     title = title,
     amount = amount,
-    refId = id
+    refId = id,
+    colorIndex = colorIndex
 )
 
 /** Real markers from stored transactions (replaces the debug fake). */

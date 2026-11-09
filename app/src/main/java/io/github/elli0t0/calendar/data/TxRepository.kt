@@ -34,9 +34,20 @@ object TxRepository {
         }
     }
 
-    fun add(type: TxType, title: String, amount: Long, date: LocalDate) {
+    fun add(
+        type: TxType,
+        title: String,
+        amount: Long,
+        date: LocalDate,
+        note: String = "",
+        colorIndex: Int = -1,
+    ) {
         val nextId = (_items.value.maxOfOrNull { it.id } ?: 0L) + 1L
-        updateList(_items.value + Transaction(nextId, type, title, amount, date.toEpochDay()))
+        updateList(
+            _items.value + Transaction(
+                nextId, type, title, amount, date.toEpochDay(), note, colorIndex
+            )
+        )
     }
 
     fun update(tx: Transaction) {

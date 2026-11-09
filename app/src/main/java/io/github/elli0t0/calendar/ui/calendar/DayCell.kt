@@ -28,13 +28,23 @@ import io.github.elli0t0.calendar.data.DayMarker
 import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.jalali.JalaliDate
 import io.github.elli0t0.calendar.jalali.toPersianDigits
+import io.github.elli0t0.calendar.ui.theme.EventPalette
 import java.time.LocalDate
 
-fun markerColor(type: MarkerType): Color = when (type) {
-    MarkerType.INCOME -> Color(0xFF43A047)
-    MarkerType.EXPENSE -> Color(0xFFE53935)
-    MarkerType.INSTALLMENT -> Color(0xFFFB8C00)
-}
+/**
+ * Color for a marker: the chosen palette color when one is set,
+ * otherwise the color of its type.
+ */
+fun markerColor(type: MarkerType, colorIndex: Int = -1): Color =
+    if (colorIndex in EventPalette.indices) {
+        EventPalette[colorIndex]
+    } else {
+        when (type) {
+            MarkerType.INCOME -> Color(0xFF43A047)
+            MarkerType.EXPENSE -> Color(0xFFE53935)
+            MarkerType.INSTALLMENT -> Color(0xFFFB8C00)
+        }
+    }
 
 @Composable
 fun DayCell(
@@ -123,7 +133,7 @@ fun DayCell(
                         .fillMaxWidth()
                         .height(3.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(markerColor(marker.type))
+                        .background(markerColor(marker.type, marker.colorIndex))
                 )
             }
         }
