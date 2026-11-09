@@ -1,5 +1,6 @@
 package io.github.elli0t0.calendar.ui.common
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -29,6 +30,7 @@ import kotlinx.coroutines.launch
  * label; focus only changes the cursor and label color to the accent.
  * When a field gets focus it scrolls itself into view above the keyboard.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SheetTextField(
     value: String,
