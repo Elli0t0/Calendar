@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0]
+
+- Task 4a, Month + Day restyle to match the reference. Month grid tiles
+  are back: 8dp corners, 2dp gaps, surfaceContainerLow in dark and
+  surfaceContainer in light, out-of-month days at 35% alpha. Today gets
+  a 1.5dp onSurfaceVariant outline around the tile and its number in a
+  small filled rounded square (onSurface, background text); the selected
+  non-today day gets the outline only. The day section below the grid
+  is a big 32sp bold day number with the weekday small next to it and
+  the Gregorian date muted underneath. The empty state is a small
+  outlined calendar icon with muted text, centered. The bottom pill is
+  52dp, fully rounded, secondaryContainer, ~70% of the screen wide and
+  24dp above the nav bar (still shows the day's first event, tap to
+  edit, + to add). The Day view's 7-day strip uses the same tiles and
+  today/selected treatment. New LocalDarkTheme (follows the ThemeMode
+  setting) picks the tile color; all sizes live in Dimens.kt.
+
 ## [0.1.10]
 
 - Task 4, Month screen: matches the reference. New theme/Dimens.kt holds

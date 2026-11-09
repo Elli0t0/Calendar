@@ -255,11 +255,23 @@ fun DayEvents(
     }
     Spacer(modifier = Modifier.height(12.dp))
     if (dayInstallments.isEmpty() && dayTxs.isEmpty()) {
-        Text(
-            text = stringResource(R.string.no_events),
-            fontSize = 15.sp,
-            color = scheme.onSurfaceVariant
-        )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_date_range),
+                contentDescription = null,
+                tint = scheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.no_events),
+                fontSize = 15.sp,
+                color = scheme.onSurfaceVariant
+            )
+        }
     } else {
         DayEventCards(
             date = date,

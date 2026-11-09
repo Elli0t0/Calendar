@@ -2,6 +2,7 @@ package io.github.elli0t0.calendar.ui.calendar
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,7 +33,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.DayMarker
 import io.github.elli0t0.calendar.data.Installment
@@ -44,6 +44,8 @@ import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
+import io.github.elli0t0.calendar.ui.theme.Dimens
+import io.github.elli0t0.calendar.ui.theme.LocalDarkTheme
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -102,7 +104,7 @@ fun DayView(
         // 7-day strip.
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
+            horizontalArrangement = Arrangement.spacedBy(Dimens.GridGap)
         ) {
             weekDays.forEach { date ->
                 DayStripCell(
@@ -155,16 +157,31 @@ fun DayStripCell(
 ) {
     val scheme = MaterialTheme.colorScheme
     val jalali = Jalali.toJalali(date)
+    // Tile color: surfaceContainerLow in dark, surfaceContainer in light.
+    val tileColor = if (LocalDarkTheme.current) {
+        scheme.surfaceContainerLow
+    } else {
+        scheme.surfaceContainer
+    }
+    var cellModifier = modifier
+        .clip(RoundedCornerShape(Dimens.DayTileCorner))
+        .background(tileColor)
+        .clickable(onClick = onClick)
+    // Today and the selected day get a 1.5dp outline around the tile.
+    if (isToday || isSelected) {
+        cellModifier = cellModifier.border(
+            Dimens.DayTileOutline,
+            scheme.onSurfaceVariant,
+            RoundedCornerShape(Dimens.DayTileCorner)
+        )
+    }
     Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 4.dp),
+        modifier = cellModifier.padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = PersianNames.weekdayLetter(date),
-            fontSize = 13.sp,
+            fontSize = Dimens.StripLetter,
             color = if (PersianNames.isFriday(date)) {
                 Color(0xFFE53935)
             } else {
@@ -174,26 +191,19 @@ fun DayStripCell(
         Spacer(modifier = Modifier.height(4.dp))
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(Dimens.StripNumberBox)
                 .background(
-                    when {
-                        isSelected -> scheme.onSurface
-                        isToday -> scheme.primary
-                        else -> Color.Transparent
-                    },
-                    RoundedCornerShape(8.dp)
+                    // Today: the number sits in a small filled rounded square.
+                    if (isToday) scheme.onSurface else Color.Transparent,
+                    RoundedCornerShape(Dimens.DayNumberBoxCorner)
                 ),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = jalali.day.toPersianDigits(),
-                fontSize = 15.sp,
+                fontSize = Dimens.StripNumber,
                 fontWeight = FontWeight.SemiBold,
-                color = when {
-                    isSelected -> scheme.background
-                    isToday -> scheme.onPrimary
-                    else -> scheme.onSurface
-                }
+                color = if (isToday) scheme.background else scheme.onSurface
             )
         }
         Spacer(modifier = Modifier.height(4.dp))

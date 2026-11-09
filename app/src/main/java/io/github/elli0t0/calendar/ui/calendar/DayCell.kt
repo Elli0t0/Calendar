@@ -2,6 +2,7 @@ package io.github.elli0t0.calendar.ui.calendar
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.jalali.JalaliDate
 import io.github.elli0t0.calendar.jalali.toPersianDigits
 import io.github.elli0t0.calendar.ui.theme.EventPalette
+import io.github.elli0t0.calendar.ui.theme.LocalDarkTheme
 import java.time.LocalDate
 
 /**
@@ -83,9 +85,25 @@ fun DayCell(
     markerStyle: MarkerStyle = MarkerStyle.MUTED,
 ) {
     val scheme = MaterialTheme.colorScheme
+    // Tile color: surfaceContainerLow in dark, surfaceContainer in light.
+    val tileColor = if (LocalDarkTheme.current) {
+        scheme.surfaceContainerLow
+    } else {
+        scheme.surfaceContainer
+    }
     var cellModifier = Modifier
         .aspectRatio(0.7f)
+        .clip(RoundedCornerShape(Dimens.DayTileCorner))
+        .background(tileColor)
         .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+    // Today and the selected day get a 1.5dp outline around the tile.
+    if (isToday || isSelected) {
+        cellModifier = cellModifier.border(
+            Dimens.DayTileOutline,
+            scheme.onSurfaceVariant,
+            RoundedCornerShape(Dimens.DayTileCorner)
+        )
+    }
     if (!inCurrentMonth) {
         cellModifier = cellModifier.alpha(0.35f)
     }
@@ -104,7 +122,8 @@ fun DayCell(
             Arrangement.Center
         },
     ) {
-        if (isSelected) {
+        // Today: the number sits in a small filled rounded square.
+        if (isToday) {
             Box(
                 modifier = Modifier.size(Dimens.DayNumberBox)
                     .background(scheme.onSurface, RoundedCornerShape(Dimens.DayNumberBoxCorner)),
@@ -113,19 +132,6 @@ fun DayCell(
                 Text(
                     text = jalali.day.toPersianDigits(),
                     color = scheme.background,
-                    fontSize = Dimens.DayNumber,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        } else if (isToday) {
-            Box(
-                modifier = Modifier.size(Dimens.DayNumberBox)
-                    .background(scheme.primary, RoundedCornerShape(Dimens.DayNumberBoxCorner)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = jalali.day.toPersianDigits(),
-                    color = scheme.onPrimary,
                     fontSize = Dimens.DayNumber,
                     fontWeight = FontWeight.SemiBold
                 )

@@ -160,7 +160,7 @@ fun CalendarScreen(
                 PersianNames.gregorianMonthName(selected.monthValue),
                 selected.year.toPersianDigits()
             ),
-            20.sp
+            Dimens.HeaderTitle
         )
         CalendarViewMode.SCHEDULE -> Triple(
             PersianNames.jalaliMonthName(selectedJalali.month),
@@ -405,20 +405,27 @@ fun CalendarScreen(
         ) { date ->
             val jalali = Jalali.toJalali(date)
             Column(modifier = Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = jalali.day.toPersianDigits(),
+                        fontSize = Dimens.DaySectionNumber,
+                        fontWeight = FontWeight.Bold,
+                        color = scheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = PersianNames.weekdayName(date),
+                        fontSize = Dimens.DaySectionWeekday,
+                        color = scheme.onSurface
+                    )
+                }
                 Text(
-                    text = "${jalali.day.toPersianDigits()} ${PersianNames.weekdayName(date)}",
-                    fontSize = Dimens.DayHeader,
-                    fontWeight = FontWeight.Bold,
-                    color = scheme.onSurface
-                )
-                Text(
-                    text = "${PersianNames.jalaliMonthName(jalali.month)} ${jalali.year.toPersianDigits()} · " +
-                        stringResource(
-                            R.string.date_gregorian,
-                            date.dayOfMonth.toPersianDigits(),
-                            PersianNames.gregorianMonthName(date.monthValue),
-                            date.year.toPersianDigits()
-                        ),
+                    text = stringResource(
+                        R.string.date_gregorian,
+                        date.dayOfMonth.toPersianDigits(),
+                        PersianNames.gregorianMonthName(date.monthValue),
+                        date.year.toPersianDigits()
+                    ),
                     fontSize = Dimens.DayHeaderMuted,
                     color = scheme.onSurfaceVariant
                 )
@@ -495,12 +502,11 @@ fun CalendarScreen(
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 16.dp)
+                .fillMaxWidth(0.7f)
+                .padding(bottom = 24.dp)
                 .height(Dimens.PillHeight)
                 .clip(RoundedCornerShape(Dimens.PillCorner))
-                .background(scheme.surfaceVariant),
+                .background(scheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Row(
