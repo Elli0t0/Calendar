@@ -1,6 +1,7 @@
 package io.github.elli0t0.calendar.data
 
 import android.content.Context
+import io.github.elli0t0.calendar.notify.ReminderScheduler
 import java.io.File
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
@@ -22,15 +23,18 @@ object TxRepository {
     val items: StateFlow<List<Transaction>> = _items.asStateFlow()
 
     private lateinit var store: TxStore
+    private lateinit var appContext: Context
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var initialized = false
 
     fun init(context: Context) {
         if (initialized) return
         initialized = true
+        appContext = context.applicationContext
         store = TxStore(File(context.filesDir, "transactions.json"))
         scope.launch {
             _items.value = store.load()
+            ReminderScheduler.reschedule(appContext, _items.value, InstallmentRepository.items.value)
         }
     }
 
@@ -43,12 +47,13 @@ object TxRepository {
         colorIndex: Int = -1,
         repeat: Repeat = Repeat.NONE,
         repeatUntilEpochDay: Long? = null,
+        remind: Remind = Remind.NONE,
     ) {
         val nextId = (_items.value.maxOfOrNull { it.id } ?: 0L) + 1L
         updateList(
             _items.value + Transaction(
                 nextId, type, title, amount, date.toEpochDay(), note, colorIndex,
-                repeat, repeatUntilEpochDay
+                repeat, repeatUntilEpochDay, remind
             )
         )
     }
@@ -65,6 +70,9 @@ object TxRepository {
         _items.value = newList
         if (::store.isInitialized) {
             scope.launch { store.save(newList) }
+        }
+        if (::appContext.isInitialized) {
+            ReminderScheduler.reschedule(appContext, newList, InstallmentRepository.items.value)
         }
     }
 }

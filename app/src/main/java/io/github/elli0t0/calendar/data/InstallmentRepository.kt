@@ -1,6 +1,7 @@
 package io.github.elli0t0.calendar.data
 
 import android.content.Context
+import io.github.elli0t0.calendar.notify.ReminderScheduler
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,15 +22,18 @@ object InstallmentRepository {
     val items: StateFlow<List<Installment>> = _items.asStateFlow()
 
     private lateinit var store: InstallmentStore
+    private lateinit var appContext: Context
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var initialized = false
 
     fun init(context: Context) {
         if (initialized) return
         initialized = true
+        appContext = context.applicationContext
         store = InstallmentStore(File(context.filesDir, "installments.json"))
         scope.launch {
             _items.value = store.load()
+            ReminderScheduler.reschedule(appContext, TxRepository.items.value, _items.value)
         }
     }
 
@@ -40,11 +44,13 @@ object InstallmentRepository {
         count: Int,
         startYear: Int,
         startMonth: Int,
+        remind: Remind = Remind.NONE,
     ) {
         val nextId = (_items.value.maxOfOrNull { it.id } ?: 0L) + 1L
         updateList(
             _items.value + Installment(
-                nextId, title, amountPerMonth, dayOfMonth, count, startYear, startMonth, emptySet()
+                nextId, title, amountPerMonth, dayOfMonth, count, startYear, startMonth,
+                emptySet(), remind
             )
         )
     }
@@ -71,6 +77,9 @@ object InstallmentRepository {
         _items.value = newList
         if (::store.isInitialized) {
             scope.launch { store.save(newList) }
+        }
+        if (::appContext.isInitialized) {
+            ReminderScheduler.reschedule(appContext, TxRepository.items.value, newList)
         }
     }
 }

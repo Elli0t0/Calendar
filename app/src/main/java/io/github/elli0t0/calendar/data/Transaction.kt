@@ -22,6 +22,7 @@ data class Transaction(
     val repeat: Repeat = Repeat.NONE,
     /** Last epoch day the series repeats on, or null when it never ends. */
     val repeatUntilEpochDay: Long? = null,
+    val remind: Remind = Remind.NONE,
 )
 
 internal fun Transaction.toJson(): JSONObject = JSONObject().apply {
@@ -34,6 +35,7 @@ internal fun Transaction.toJson(): JSONObject = JSONObject().apply {
     put("colorIndex", colorIndex)
     put("repeat", repeat.name)
     if (repeatUntilEpochDay != null) put("repeatUntilEpochDay", repeatUntilEpochDay)
+    put("remind", remind.name)
 }
 
 internal fun JSONObject.toTransaction(): Transaction = Transaction(
@@ -50,5 +52,7 @@ internal fun JSONObject.toTransaction(): Transaction = Transaction(
         getLong("repeatUntilEpochDay")
     } else {
         null
-    }
+    },
+    remind = runCatching { Remind.valueOf(optString("remind", Remind.NONE.name)) }
+        .getOrDefault(Remind.NONE)
 )

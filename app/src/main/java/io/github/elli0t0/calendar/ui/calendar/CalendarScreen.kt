@@ -33,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -84,6 +85,8 @@ fun CalendarScreen(
     markerProvider: MarkerProvider,
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Due date to jump to when opened from a reminder notification. */
+    initialSelectedDate: LocalDate? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     // Collecting the flow here makes the screen recompose whenever
@@ -98,6 +101,18 @@ fun CalendarScreen(
     var editingInst by remember { mutableStateOf<Installment?>(null) }
     val baseJalali = remember { Jalali.toJalali(today) }
     val pagerState = rememberPagerState(initialPage = 600, pageCount = { 1201 })
+    // A reminder tap jumps the calendar to the due date.
+    LaunchedEffect(initialSelectedDate) {
+        if (initialSelectedDate != null) {
+            selected = initialSelectedDate
+            val target = Jalali.toJalali(initialSelectedDate)
+            val page = (
+                600 + (target.year * 12 + target.month) -
+                    (baseJalali.year * 12 + baseJalali.month)
+                ).coerceIn(0, 1200)
+            pagerState.scrollToPage(page)
+        }
+    }
     val scope = rememberCoroutineScope()
     val displayed = addJalaliMonths(baseJalali.year, baseJalali.month, pagerState.currentPage - 600)
 

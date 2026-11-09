@@ -53,6 +53,14 @@
     <string name="repeat_never">هرگز</string>
     <string name="repeat_clear">پاک کردن</string>
     <string name="repeat_delete_confirm">این رویداد و همه تکرارهایش حذف شود؟</string>
+    <string name="reminders_channel_name">یادآورها</string>
+    <string name="remind_title">یادآوری</string>
+    <string name="remind_none">بدون یادآوری</string>
+    <string name="remind_on_day">در روز موعد</string>
+    <string name="remind_one_day_before">۱ روز قبل</string>
+    <string name="remind_two_days_before">۲ روز قبل</string>
+    <string name="remind_one_week_before">۱ هفته قبل</string>
+    <string name="remind_permission_hint">اعلان‌ها خاموش است — در تنظیمات فعال کنید</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>

@@ -15,6 +15,7 @@ data class Installment(
     val startYear: Int, // Jalali year of the first installment
     val startMonth: Int, // Jalali month of the first installment
     val paid: Set<Int>, // indexes 0 until count that are paid
+    val remind: Remind = Remind.NONE,
 )
 
 /**
@@ -40,6 +41,7 @@ internal fun Installment.toJson(): JSONObject = JSONObject().apply {
     val paidArray = JSONArray()
     paid.forEach { paidArray.put(it) }
     put("paid", paidArray)
+    put("remind", remind.name)
 }
 
 internal fun JSONObject.toInstallment(): Installment {
@@ -56,6 +58,8 @@ internal fun JSONObject.toInstallment(): Installment {
         count = getInt("count"),
         startYear = getInt("startYear"),
         startMonth = getInt("startMonth"),
-        paid = paid
+        paid = paid,
+        remind = runCatching { Remind.valueOf(optString("remind", Remind.NONE.name)) }
+            .getOrDefault(Remind.NONE)
     )
 }

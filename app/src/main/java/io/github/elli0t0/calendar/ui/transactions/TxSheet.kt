@@ -32,6 +32,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.MarkerType
+import io.github.elli0t0.calendar.data.Remind
 import io.github.elli0t0.calendar.data.Repeat
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
@@ -75,6 +83,15 @@ fun repeatLabelRes(repeat: Repeat): Int = when (repeat) {
     Repeat.YEARLY -> R.string.repeat_yearly
 }
 
+/** String resource for a reminder choice. */
+fun remindLabelRes(remind: Remind): Int = when (remind) {
+    Remind.NONE -> R.string.remind_none
+    Remind.ON_DAY -> R.string.remind_on_day
+    Remind.ONE_DAY_BEFORE -> R.string.remind_one_day_before
+    Remind.TWO_DAYS_BEFORE -> R.string.remind_two_days_before
+    Remind.ONE_WEEK_BEFORE -> R.string.remind_one_week_before
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TxSheet(
@@ -92,10 +109,26 @@ fun TxSheet(
     var repeatUntil by remember {
         mutableStateOf(initial?.repeatUntilEpochDay?.let { LocalDate.ofEpochDay(it) })
     }
+    var remind by remember { mutableStateOf(initial?.remind ?: Remind.NONE) }
     var showDateDialog by remember { mutableStateOf(false) }
     var showRepeatDialog by remember { mutableStateOf(false) }
     var showEndDialog by remember { mutableStateOf(false) }
+    var showRemindDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    // Notification permission is asked only when the user picks a reminder,
+    // never at app start. Below Android 13 it is granted at install time.
+    val context = LocalContext.current
+    var hasNotificationPermission by remember {
+        mutableStateOf(
+            Build.VERSION.SDK_INT < 33 ||
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> hasNotificationPermission = granted }
     val scheme = MaterialTheme.colorScheme
     val amount = digits.toLongOrNull() ?: 0L
     val canSave = title.isNotBlank() && amount > 0
@@ -239,6 +272,38 @@ fun TxSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .border(1.dp, scheme.outline, RoundedCornerShape(14.dp))
+                    .clickable { showRemindDialog = true }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_notification),
+                    contentDescription = null,
+                    tint = scheme.primary
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(text = stringResource(R.string.remind_title), fontSize = 16.sp, color = scheme.onSurface)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(remindLabelRes(remind)),
+                    fontSize = 14.sp,
+                    color = scheme.onSurfaceVariant
+                )
+            }
+            if (remind != Remind.NONE && !hasNotificationPermission) {
+                Text(
+                    text = stringResource(R.string.remind_permission_hint),
+                    fontSize = 13.sp,
+                    color = scheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -270,7 +335,7 @@ fun TxSheet(
                     if (initial == null) {
                         TxRepository.add(
                             type, title.trim(), amount, date, note.trim(), colorIndex,
-                            repeat, untilEpochDay
+                            repeat, untilEpochDay, remind
                         )
                     } else {
                         TxRepository.update(
@@ -282,7 +347,8 @@ fun TxSheet(
                                 note = note.trim(),
                                 colorIndex = colorIndex,
                                 repeat = repeat,
-                                repeatUntilEpochDay = untilEpochDay
+                                repeatUntilEpochDay = untilEpochDay,
+                                remind = remind
                             )
                         )
                     }
@@ -300,7 +366,7 @@ fun TxSheet(
                         onClick = {
                             TxRepository.add(
                                 type, title.trim(), amount, date, note.trim(), colorIndex,
-                                repeat, untilEpochDay
+                                repeat, untilEpochDay, remind
                             )
                             onDismiss()
                         },
@@ -407,6 +473,57 @@ fun TxSheet(
                 // The end date can't be before the start date.
                 repeatUntil = maxOf(it, date)
                 showEndDialog = false
+            }
+        )
+    }
+    if (showRemindDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemindDialog = false },
+            title = { Text(stringResource(R.string.remind_title)) },
+            text = {
+                Column {
+                    Remind.entries.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    remind = option
+                                    showRemindDialog = false
+                                    if (option != Remind.NONE && !hasNotificationPermission &&
+                                        Build.VERSION.SDK_INT >= 33
+                                    ) {
+                                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    }
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = remind == option,
+                                onClick = {
+                                    remind = option
+                                    showRemindDialog = false
+                                    if (option != Remind.NONE && !hasNotificationPermission &&
+                                        Build.VERSION.SDK_INT >= 33
+                                    ) {
+                                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(remindLabelRes(option)),
+                                fontSize = 16.sp,
+                                color = scheme.onSurface
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showRemindDialog = false }) {
+                    Text(stringResource(R.string.tx_dismiss))
+                }
             }
         )
     }

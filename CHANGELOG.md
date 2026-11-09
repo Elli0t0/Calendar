@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.1]
+
+- Stage 3: reminders. Transaction and Installment gain remind (None / On
+  the day / 1 day before / 2 days before / 1 week before); pure
+  nextReminders in the new notify package (09:00 fire time, 90-day window,
+  repeating transactions via occurrencesBetween, unpaid installments via
+  dueDate) with unit tests; one inexact alarm (setAndAllowWhileIdle, no
+  exact-alarm permission) for the earliest reminder, a receiver that posts
+  due reminders and re-arms, a boot receiver, and reschedule after every
+  add/update/delete and on app start. Notifications open the calendar on
+  the due date; repeats share one notification id so they don't stack.
+  POST_NOTIFICATIONS is asked only when a reminder is picked (never at
+  start); if denied the choice is saved and a hint shows under the row.
+  Reminder row in TxSheet and InstallmentSheet.
+
 ## [0.1.0]
 
 - Stage 2: repeat. Transaction gains repeat (None/Daily/Weekly/Monthly/

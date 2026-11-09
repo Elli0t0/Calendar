@@ -1,5 +1,6 @@
 package io.github.elli0t0.calendar.ui.common
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import io.github.elli0t0.calendar.R
@@ -58,6 +59,21 @@ fun fullJalaliDate(date: LocalDate): String {
         PersianNames.weekdayName(date),
         toPersianDigits(j.day.toString()),
         PersianNames.jalaliMonthName(j.month),
+        toPersianDigits(j.year.toString())
+    )
+}
+
+/** Same text as [fullJalaliDate], but plain (no @Composable) for use outside
+ * composition, e.g. notification text. Reads the name arrays from [context]. */
+fun formatJalaliDate(context: Context, date: LocalDate): String {
+    val j = Jalali.toJalali(date)
+    val weekday = context.resources.getStringArray(R.array.weekday_names)[PersianNames.weekdayIndex(date.dayOfWeek)]
+    val month = context.resources.getStringArray(R.array.shamsi_month_names)[j.month - 1]
+    return context.getString(
+        R.string.date_full,
+        weekday,
+        toPersianDigits(j.day.toString()),
+        month,
         toPersianDigits(j.year.toString())
     )
 }

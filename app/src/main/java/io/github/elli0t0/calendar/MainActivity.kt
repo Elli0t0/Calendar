@@ -1,6 +1,8 @@
 package io.github.elli0t0.calendar
 
+import android.content.Intent
 import android.os.Bundle
+import java.time.LocalDate
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -46,6 +48,8 @@ import io.github.elli0t0.calendar.data.InstallmentMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.TransactionMarkerProvider
 import io.github.elli0t0.calendar.data.TxRepository
+import io.github.elli0t0.calendar.notify.EXTRA_EPOCH_DAY
+import io.github.elli0t0.calendar.notify.ReminderScheduler
 import io.github.elli0t0.calendar.ui.calendar.CalendarScreen
 import io.github.elli0t0.calendar.ui.installments.InstallmentsScreen
 import io.github.elli0t0.calendar.ui.stats.StatsScreen
@@ -62,10 +66,16 @@ private fun tabIcon(tab: Tab): Int = when (tab) {
 }
 
 class MainActivity : ComponentActivity() {
+    // Due date from a tapped reminder notification, if any.
+    private val deepLinkEpochDay = mutableStateOf<Long?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        deepLinkEpochDay.value =
+            intent.getLongExtra(EXTRA_EPOCH_DAY, -1L).takeIf { it >= 0 }
         TxRepository.init(applicationContext)
         InstallmentRepository.init(applicationContext)
+        ReminderScheduler.reschedule(applicationContext)
         setContent {
             CalendarTheme {
                     var tab by remember { mutableStateOf(Tab.CALENDAR) }
@@ -156,7 +166,10 @@ class MainActivity : ComponentActivity() {
                             when (tab) {
                                 Tab.CALENDAR -> CalendarScreen(
                                     markerProvider = markerProvider,
-                                    onMenuClick = openDrawer
+                                    onMenuClick = openDrawer,
+                                    initialSelectedDate = deepLinkEpochDay.value?.let {
+                                        LocalDate.ofEpochDay(it)
+                                    }
                                 )
                                 Tab.TRANSACTIONS -> TransactionsScreen(onMenuClick = openDrawer)
                                 Tab.INSTALLMENTS -> InstallmentsScreen(onMenuClick = openDrawer)
@@ -166,6 +179,13 @@ class MainActivity : ComponentActivity() {
                     }
             }
         }
+    }
+
+    // SingleTop: a notification tap while the app is open re-delivers here.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        deepLinkEpochDay.value =
+            intent.getLongExtra(EXTRA_EPOCH_DAY, -1L).takeIf { it >= 0 }
     }
 }
 
