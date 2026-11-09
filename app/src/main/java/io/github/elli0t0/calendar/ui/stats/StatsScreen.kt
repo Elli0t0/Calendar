@@ -120,7 +120,7 @@ fun StatsScreen(onMenuClick: () -> Unit) {
                 selectedMonth = prev.second
             }) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
+                    painter = painterResource(R.drawable.ic_arrow_left),
                     contentDescription = stringResource(R.string.previous_month)
                 )
             }
@@ -139,7 +139,7 @@ fun StatsScreen(onMenuClick: () -> Unit) {
                 selectedMonth = next.second
             }) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_arrow_left),
+                    painter = painterResource(R.drawable.ic_arrow_right),
                     contentDescription = stringResource(R.string.next_month)
                 )
             }

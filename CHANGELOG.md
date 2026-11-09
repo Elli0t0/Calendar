@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.12]
+
+- Language follows the device: removed the forced Persian locale and the
+  forced RTL from MainActivity; per-app language supported via
+  locales_config.xml (en + fa); supportsRtl stays true
+- Month names, Gregorian month names, weekday names and letters moved from
+  code into string-arrays (English default, Persian in values-fa); the
+  helpers keep their names and read them from resources
+- Digits follow the language: Persian digits and «٬» only in fa, Latin
+  digits and "," otherwise; the currency word still comes from strings
+- Date formats come from resources in each language's word order
+  (date_full, date_gregorian)
+- Prev/next arrows are autoMirrored vectors and point the right way in
+  both directions
+
 ## [0.0.11]
 
 - Language setup: values/strings.xml is now English (default), values-fa

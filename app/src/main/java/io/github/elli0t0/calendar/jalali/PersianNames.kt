@@ -1,37 +1,43 @@
 package io.github.elli0t0.calendar.jalali
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringArrayResource
+import io.github.elli0t0.calendar.R
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.util.Locale
 
-/** Persian names and digits for the calendar UI. */
+/** True when the app's current language is Persian (fa). Digits follow it. */
+fun isPersianLocale(): Boolean = Locale.getDefault().language == "fa"
+
+/**
+ * Calendar names in the app's current language, read from string arrays
+ * (values/arrays.xml, values-fa/arrays.xml). Weekday order starts Saturday.
+ * The Jalali algorithm itself (Jalali.kt) stays untouched and locale-free.
+ */
 object PersianNames {
 
-    val jalaliMonths = listOf(
-        "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-        "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
-    )
+    @Composable
+    fun weekdayName(date: LocalDate): String =
+        stringArrayResource(R.array.weekday_names)[weekdayIndex(date.dayOfWeek)]
 
-    val gregorianMonths = listOf(
-        "ژانویه", "فوریه", "مارس", "آوریل", "مه", "ژوئن",
-        "ژوئیه", "اوت", "سپتامبر", "اکتبر", "نوامبر", "دسامبر"
-    )
+    @Composable
+    fun jalaliMonthName(month: Int): String =
+        stringArrayResource(R.array.shamsi_month_names)[month - 1]
 
-    /** Weekday letters, week starting Saturday. Friday (ج) is last. */
-    val weekdayLetters = listOf("ش", "ی", "د", "س", "چ", "پ", "ج")
+    @Composable
+    fun gregorianMonthName(month: Int): String =
+        stringArrayResource(R.array.gregorian_month_names)[month - 1]
 
-    /** Full weekday names, week starting Saturday. */
-    val weekdayNames = listOf(
-        "شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"
-    )
+    /** Letter for a Gregorian date, Saturday = first letter (index 0). */
+    @Composable
+    fun weekdayLetter(date: LocalDate): String =
+        stringArrayResource(R.array.weekday_letters)[weekdayIndex(date.dayOfWeek)]
 
-    fun weekdayName(date: LocalDate): String = weekdayNames[weekdayIndex(date.dayOfWeek)]
-
-    fun jalaliMonthName(month: Int): String = jalaliMonths[month - 1]
-
-    fun gregorianMonthName(month: Int): String = gregorianMonths[month - 1]
-
-    /** Letter for a Gregorian date, Saturday = ش (index 0). */
-    fun weekdayLetter(date: LocalDate): String = weekdayLetters[weekdayIndex(date.dayOfWeek)]
+    /** Weekday letters, week starting Saturday. Friday is last. */
+    @Composable
+    fun weekdayLetters(): List<String> =
+        stringArrayResource(R.array.weekday_letters).toList()
 
     /** Saturday = 0 … Friday = 6. */
     fun weekdayIndex(dayOfWeek: DayOfWeek): Int = (dayOfWeek.value + 1) % 7
@@ -41,9 +47,13 @@ object PersianNames {
 
 private val persianDigits = listOf('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹')
 
-/** 2026 -> «۲۰۲۶». */
-fun Int.toPersianDigits(): String =
-    toString().map { if (it in '0'..'9') persianDigits[it - '0'] else it }.joinToString("")
+/** 2026 -> «۲۰۲۶» in Persian, «2026» otherwise. */
+fun Int.toPersianDigits(): String {
+    if (!isPersianLocale()) return toString()
+    return toString().map { if (it in '0'..'9') persianDigits[it - '0'] else it }.joinToString("")
+}
 
-fun Long.toPersianDigits(): String =
-    toString().map { if (it in '0'..'9') persianDigits[it - '0'] else it }.joinToString("")
+fun Long.toPersianDigits(): String {
+    if (!isPersianLocale()) return toString()
+    return toString().map { if (it in '0'..'9') persianDigits[it - '0'] else it }.joinToString("")
+}

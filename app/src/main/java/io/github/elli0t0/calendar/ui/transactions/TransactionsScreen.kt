@@ -54,11 +54,17 @@ import java.time.LocalDate
 private val IncomeGreen = Color(0xFF43A047)
 private val ExpenseRed = Color(0xFFE53935)
 
+@Composable
 private fun groupHeader(epochDay: Long): String {
     val date = LocalDate.ofEpochDay(epochDay)
     val j = Jalali.toJalali(date)
-    return "${PersianNames.weekdayName(date)} ${toPersianDigits(j.day.toString())} " +
-        "${PersianNames.jalaliMonthName(j.month)} ${toPersianDigits(j.year.toString())}"
+    return stringResource(
+        R.string.date_full,
+        PersianNames.weekdayName(date),
+        toPersianDigits(j.day.toString()),
+        PersianNames.jalaliMonthName(j.month),
+        toPersianDigits(j.year.toString())
+    )
 }
 
 @Composable

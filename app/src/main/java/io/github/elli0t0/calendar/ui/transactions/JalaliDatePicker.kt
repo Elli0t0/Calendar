@@ -90,7 +90,7 @@ fun JalaliDatePicker(
                         month = prev.second
                     }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_right),
+                            painter = painterResource(R.drawable.ic_arrow_left),
                             contentDescription = stringResource(R.string.previous_month)
                         )
                     }
@@ -100,14 +100,14 @@ fun JalaliDatePicker(
                         month = next.second
                     }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_left),
+                            painter = painterResource(R.drawable.ic_arrow_right),
                             contentDescription = stringResource(R.string.next_month)
                         )
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                    PersianNames.weekdayLetters.forEachIndexed { index, letter ->
+                    PersianNames.weekdayLetters().forEachIndexed { index, letter ->
                         Box(
                             modifier = Modifier.size(36.dp),
                             contentAlignment = Alignment.Center

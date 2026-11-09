@@ -57,12 +57,13 @@ Keep the APK small — it is a deliberate feature, not an accident:
 ## Working rules
 
 - UI strings: English in `values/strings.xml`, Persian in
-  `values-fa/strings.xml`, never hardcoded.
+  `values-fa/strings.xml`, never hardcoded. Layout direction follows the
+  language (Persian RTL, English LTR); never force a direction or a locale.
 - Never write the reference app's brand name anywhere in the repo (code,
   comments, commits, README, release notes).
 - Follow the Size rules; no new dependency unless truly required.
-- Change only what the task asks. Don't touch the Jalali code or tests
-  unless asked. Don't add features that weren't asked for.
+- Change only what the task asks. Don't touch the Jalali algorithm or its
+  tests unless asked. Don't add features that weren't asked for.
 - Do the steps in order and verify each before the next.
 - Final reply: only a short change list and the APK size in one line. Then
   push to GitHub with the next patch version (`VERSION_PATCH` + 1); the

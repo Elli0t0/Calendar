@@ -44,4 +44,6 @@
     <string name="tx_dismiss">انصراف</string>
     <string name="tx_delete_confirm">حذف شود؟</string>
     <string name="amount_with_currency">%1$s تومان</string>
+    <string name="date_full">%1$s %2$s %3$s %4$s</string>
+    <string name="date_gregorian">%1$s %2$s %3$s</string>
 </resources>

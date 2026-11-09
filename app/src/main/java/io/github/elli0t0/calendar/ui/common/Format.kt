@@ -1,20 +1,28 @@
 package io.github.elli0t0.calendar.ui.common
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
+import io.github.elli0t0.calendar.jalali.isPersianLocale
 import java.time.LocalDate
 
 private val persianDigits = listOf('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹')
 
-/** Converts English digits in a string to Persian digits, leaving the rest. */
-fun toPersianDigits(s: String): String =
-    s.map { if (it in '0'..'9') persianDigits[it - '0'] else it }.joinToString("")
+/** Converts English digits in a string to Persian digits when the app
+ * language is fa; leaves them Latin otherwise. */
+fun toPersianDigits(s: String): String {
+    if (!isPersianLocale()) return s
+    return s.map { if (it in '0'..'9') persianDigits[it - '0'] else it }.joinToString("")
+}
 
-/** 1500000 -> «۱٬۵۰۰٬۰۰۰». A negative value keeps its leading minus.
- * The currency word is not part of the number: callers wrap the result in
- * R.string.amount_with_currency. */
+/** 1500000 -> «۱٬۵۰۰٬۰۰۰» (fa) or «1,500,000» (en). A negative value keeps
+ * its leading minus. The currency word is not part of the number: callers
+ * wrap the result in R.string.amount_with_currency. */
 fun formatAmount(value: Long): String {
-    val grouped = value.toString().reversed().chunked(3).joinToString("٬").reversed()
+    val separator = if (isPersianLocale()) "٬" else ","
+    val grouped = value.toString().reversed().chunked(3).joinToString(separator).reversed()
     return toPersianDigits(grouped)
 }
 
@@ -31,16 +39,25 @@ fun normalizeDigits(input: String): String {
     return out.toString().take(15)
 }
 
-/** Groups English digits with ٬ and converts them to Persian digits. */
+/** Groups English digits with the locale's thousands separator and converts
+ * them to the locale's digits. */
 fun formatGroupedDigits(digits: String): String {
     if (digits.isEmpty()) return ""
-    val grouped = digits.reversed().chunked(3).joinToString("٬").reversed()
+    val separator = if (isPersianLocale()) "٬" else ","
+    val grouped = digits.reversed().chunked(3).joinToString(separator).reversed()
     return toPersianDigits(grouped)
 }
 
-/** Full Shamsi date with weekday, e.g. «دوشنبه ۱۸ آبان ۱۴۰۵». */
+/** Full Shamsi date with weekday, e.g. «دوشنبه ۱۸ آبان ۱۴۰۵» (fa) or
+ * «Monday, 18 Aban 1405» (en). Word order comes from R.string.date_full. */
+@Composable
 fun fullJalaliDate(date: LocalDate): String {
     val j = Jalali.toJalali(date)
-    return "${PersianNames.weekdayName(date)} ${toPersianDigits(j.day.toString())} " +
-        "${PersianNames.jalaliMonthName(j.month)} ${toPersianDigits(j.year.toString())}"
+    return stringResource(
+        R.string.date_full,
+        PersianNames.weekdayName(date),
+        toPersianDigits(j.day.toString()),
+        PersianNames.jalaliMonthName(j.month),
+        toPersianDigits(j.year.toString())
+    )
 }

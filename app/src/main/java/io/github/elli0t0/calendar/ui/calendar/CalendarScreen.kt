@@ -166,7 +166,7 @@ fun CalendarScreen(
 
         // Weekday row, week starts Saturday. Friday letter in red.
         Row(modifier = Modifier.fillMaxWidth()) {
-            PersianNames.weekdayLetters.forEachIndexed { index, letter ->
+            PersianNames.weekdayLetters().forEachIndexed { index, letter ->
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
@@ -233,8 +233,12 @@ fun CalendarScreen(
                     }
                 }
                 Text(
-                    text = "${date.dayOfMonth.toPersianDigits()} " +
-                        "${PersianNames.gregorianMonthName(date.monthValue)} ${date.year.toPersianDigits()}",
+                    text = stringResource(
+                        R.string.date_gregorian,
+                        date.dayOfMonth.toPersianDigits(),
+                        PersianNames.gregorianMonthName(date.monthValue),
+                        date.year.toPersianDigits()
+                    ),
                     fontSize = 14.sp,
                     color = scheme.onSurfaceVariant
                 )
