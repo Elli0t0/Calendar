@@ -73,7 +73,7 @@ fun InstallmentsScreen() {
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 20.dp, top = 4.dp, bottom = 12.dp),
+                contentPadding = PaddingValues(start = 20.dp, top = 4.dp, end = 20.dp, bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(items.sortedByDescending { it.id }, key = { it.id }) { inst ->
