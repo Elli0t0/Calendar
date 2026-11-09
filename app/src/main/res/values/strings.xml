@@ -9,4 +9,18 @@
     <string name="previous_month">ماه قبل</string>
     <string name="next_month">ماه بعد</string>
     <string name="no_events">رویدادی برای این روز نیست</string>
+    <string name="tx_add">افزودن</string>
+    <string name="tx_new">تراکنش جدید</string>
+    <string name="tx_edit">ویرایش تراکنش</string>
+    <string name="tx_title">عنوان</string>
+    <string name="tx_amount">مبلغ (تومان)</string>
+    <string name="tx_income">درآمد</string>
+    <string name="tx_expense">هزینه</string>
+    <string name="tx_balance">موجودی</string>
+    <string name="tx_save">ذخیره</string>
+    <string name="tx_delete">حذف</string>
+    <string name="tx_cancel">لغو</string>
+    <string name="tx_confirm">تأیید</string>
+    <string name="tx_pick_date">انتخاب تاریخ</string>
+    <string name="tx_empty">تراکنشی ثبت نشده است</string>
 </resources>

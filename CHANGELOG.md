@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.4]
+
+- Transactions tab: summary card (income / expense / balance), list grouped
+  by Jalali day, add/edit bottom sheet with own Jalali date picker
+- Calendar markers now come from real transactions
+
 ## [0.0.3]
 
 - Transactions data layer: JSON store (atomic temp-file writes), repository
