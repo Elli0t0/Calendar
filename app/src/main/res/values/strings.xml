@@ -102,6 +102,9 @@
     <string name="theme_dark">Dark</string>
     <string name="settings_language">Language</string>
     <string name="settings_calendar_style">Calendar style</string>
+    <string name="settings_wrap_titles">Let event titles wrap</string>
+    <string name="settings_wrap_titles_desc">Long titles wrap onto more lines</string>
+    <string name="settings_show_gregorian_tiles_desc">Shows the Gregorian day number under the Jalali day</string>
     <string name="amount_with_currency">%1$s Toman</string>
     <string name="date_full">%1$s, %2$s %3$s %4$s</string>
     <string name="date_gregorian">%2$s %1$s, %3$s</string>

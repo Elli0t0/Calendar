@@ -22,6 +22,7 @@ data class Settings(
     val viewMode: CalendarViewMode = CalendarViewMode.MONTH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val language: AppLanguage = AppLanguage.FA,
+    val wrapEventTitles: Boolean = false,
 )
 
 /** The BCP 47 tag for an app language ("fa" or "en"). */
@@ -44,6 +45,7 @@ object AppSettings {
     private const val KEY_VIEW_MODE = "view_mode"
     private const val KEY_THEME_MODE = "theme_mode"
     private const val KEY_LANGUAGE = "language"
+    private const val KEY_WRAP_EVENT_TITLES = "wrap_event_titles"
 
     private val _settings = MutableStateFlow(Settings())
     val settings: StateFlow<Settings> = _settings.asStateFlow()
@@ -76,6 +78,7 @@ object AppSettings {
                 ThemeMode.valueOf(p.getString(KEY_THEME_MODE, null) ?: "SYSTEM")
             }.getOrDefault(ThemeMode.SYSTEM),
             language = languageFromPref(p.getString(KEY_LANGUAGE, null)),
+            wrapEventTitles = p.getBoolean(KEY_WRAP_EVENT_TITLES, false),
         )
     }
 
@@ -99,6 +102,7 @@ object AppSettings {
             putString(KEY_VIEW_MODE, next.viewMode.name)
             putString(KEY_THEME_MODE, next.themeMode.name)
             putString(KEY_LANGUAGE, next.language.name)
+            putBoolean(KEY_WRAP_EVENT_TITLES, next.wrapEventTitles)
         }?.apply()
     }
 
@@ -113,4 +117,6 @@ object AppSettings {
     fun setViewMode(mode: CalendarViewMode) = update { it.copy(viewMode = mode) }
     fun setThemeMode(mode: ThemeMode) = update { it.copy(themeMode = mode) }
     fun setLanguage(lang: AppLanguage) = update { it.copy(language = lang) }
+    fun setWrapEventTitles(wrap: Boolean) =
+        update { it.copy(wrapEventTitles = wrap) }
 }

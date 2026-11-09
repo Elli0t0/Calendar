@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.3]
+
+- Task 4d, Calendar style page. A preview card at the top shows a
+  mini 2-week grid of real day cells with fake markers (the 2 weeks
+  around today), reading the live marker style and Gregorian toggle,
+  so it updates as they change. "Event colors" is now 4 options in
+  one horizontal row, equal width; each shows 6 colored stripes (the
+  3 type colors + 3 palette colors at that style), the label under
+  them, then a RadioButton. Two toggles with muted descriptions:
+  "Let event titles wrap" (new setting, titles stay on one line
+  unless it is on; affects DayEvents and ScheduleView) and "Show
+  Gregorian date in day tiles" (moved here from the Calendar section
+  of Settings). The old vertical event-color radio list is gone.
+  New setting wrapEventTitles (prefs key "wrap_event_titles") with a
+  unit test; strings in en/fa. All sizes in Dimens.kt.
+
 ## [0.2.2]
 
 - Task 4c, Settings rebuilt like the reference. Top bar: back arrow

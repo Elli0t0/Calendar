@@ -102,6 +102,9 @@
     <string name="theme_dark">تیره</string>
     <string name="settings_language">زبان</string>
     <string name="settings_calendar_style">سبک تقویم</string>
+    <string name="settings_wrap_titles">عنوان رویدادها چندخطی باشد</string>
+    <string name="settings_wrap_titles_desc">عنوان‌های طولانی در چند خط نمایش داده می‌شوند</string>
+    <string name="settings_show_gregorian_tiles_desc">عدد روز میلادی زیر عدد روز شمسی نمایش داده می‌شود</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>

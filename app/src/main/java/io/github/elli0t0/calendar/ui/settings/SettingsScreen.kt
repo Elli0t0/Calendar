@@ -126,12 +126,6 @@ fun SettingsScreen(
                 )
                 SectionDivider()
                 SwitchRow(
-                    title = stringResource(R.string.settings_show_gregorian_tiles),
-                    checked = settings.showGregorianInTiles,
-                    onCheckedChange = { AppSettings.setShowGregorianInTiles(it) }
-                )
-                SectionDivider()
-                SwitchRow(
                     title = stringResource(R.string.settings_show_gregorian_header),
                     checked = settings.showGregorianInHeader,
                     onCheckedChange = { AppSettings.setShowGregorianInHeader(it) }

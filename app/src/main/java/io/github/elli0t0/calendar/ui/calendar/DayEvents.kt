@@ -18,6 +18,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerStyle
@@ -76,11 +79,19 @@ fun DayEventRow(
         )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
+            // "Let event titles wrap" off keeps titles on one line.
+            val settings by AppSettings.settings.collectAsState()
             Text(
                 text = title,
                 fontSize = 15.sp,
                 color = scheme.onSurface,
-                textDecoration = if (strikethroughTitle) TextDecoration.LineThrough else null
+                textDecoration = if (strikethroughTitle) TextDecoration.LineThrough else null,
+                maxLines = if (settings.wrapEventTitles) Int.MAX_VALUE else 1,
+                overflow = if (settings.wrapEventTitles) {
+                    TextOverflow.Clip
+                } else {
+                    TextOverflow.Ellipsis
+                }
             )
             if (!note.isNullOrBlank()) {
                 Text(

@@ -38,6 +38,9 @@ object Dimens {
     val SettingsRowTitle = 16.sp
     val SettingsRowValue = 13.sp
     val SettingsRowDescription = 13.sp
+    val StyleStripeHeight = 3.dp
+    val StyleStripeCorner = 2.dp
+    val StyleOptionLabel = 13.sp
     val CardCorner = 24.dp
     val RowCardCorner = 20.dp
     val SheetFieldCorner = 16.dp
