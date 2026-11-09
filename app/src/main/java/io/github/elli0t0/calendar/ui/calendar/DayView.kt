@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.DayMarker
 import io.github.elli0t0.calendar.data.Installment
+import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
 import io.github.elli0t0.calendar.data.MarkerStyle
 import io.github.elli0t0.calendar.data.Transaction

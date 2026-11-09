@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.Installment
+import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerStyle
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
@@ -218,7 +219,7 @@ fun ScheduleView(
             state = listState,
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                horizontal = 20.dp, vertical = 8.dp, bottom = 96.dp
+                start = 20.dp, top = 8.dp, end = 20.dp, bottom = 96.dp
             ),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
