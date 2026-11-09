@@ -10,6 +10,7 @@ enum class FirstDay { SATURDAY, SUNDAY, MONDAY }
 enum class MarkerStyle { VERY_MUTED, MUTED, BRIGHT, VERY_BRIGHT }
 enum class CalendarViewMode { YEAR, MONTH, WEEK, DAY, SCHEDULE }
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
+enum class AppLanguage { FA, EN }
 
 data class Settings(
     val firstDay: FirstDay = FirstDay.SATURDAY,
@@ -20,7 +21,16 @@ data class Settings(
     val reminderMinute: Int = 0,
     val viewMode: CalendarViewMode = CalendarViewMode.MONTH,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val language: AppLanguage = AppLanguage.FA,
 )
+
+/** The BCP 47 tag for an app language ("fa" or "en"). */
+fun AppLanguage.localeTag(): String = if (this == AppLanguage.FA) "fa" else "en"
+
+/** The app language stored in prefs, defaulting to FA for a missing or
+ * unknown value. Pure, so it is unit-testable without a Context. */
+fun languageFromPref(value: String?): AppLanguage =
+    runCatching { AppLanguage.valueOf(value ?: "FA") }.getOrDefault(AppLanguage.FA)
 
 /** Calendar settings, persisted in SharedPreferences and exposed as a flow. */
 object AppSettings {
@@ -33,6 +43,7 @@ object AppSettings {
     private const val KEY_REMINDER_MINUTE = "reminder_minute"
     private const val KEY_VIEW_MODE = "view_mode"
     private const val KEY_THEME_MODE = "theme_mode"
+    private const val KEY_LANGUAGE = "language"
 
     private val _settings = MutableStateFlow(Settings())
     val settings: StateFlow<Settings> = _settings.asStateFlow()
@@ -64,7 +75,15 @@ object AppSettings {
             themeMode = runCatching {
                 ThemeMode.valueOf(p.getString(KEY_THEME_MODE, null) ?: "SYSTEM")
             }.getOrDefault(ThemeMode.SYSTEM),
+            language = languageFromPref(p.getString(KEY_LANGUAGE, null)),
         )
+    }
+
+    /** The saved language, read straight from prefs without init, so it
+     * can be used in attachBaseContext (which runs before init). */
+    fun readLanguage(context: Context): AppLanguage {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return languageFromPref(prefs.getString(KEY_LANGUAGE, null))
     }
 
     private fun update(transform: (Settings) -> Settings) {
@@ -79,6 +98,7 @@ object AppSettings {
             putInt(KEY_REMINDER_MINUTE, next.reminderMinute)
             putString(KEY_VIEW_MODE, next.viewMode.name)
             putString(KEY_THEME_MODE, next.themeMode.name)
+            putString(KEY_LANGUAGE, next.language.name)
         }?.apply()
     }
 
@@ -92,4 +112,5 @@ object AppSettings {
         update { it.copy(reminderHour = hour, reminderMinute = minute) }
     fun setViewMode(mode: CalendarViewMode) = update { it.copy(viewMode = mode) }
     fun setThemeMode(mode: ThemeMode) = update { it.copy(themeMode = mode) }
+    fun setLanguage(lang: AppLanguage) = update { it.copy(language = lang) }
 }

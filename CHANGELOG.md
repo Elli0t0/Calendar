@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.8]
+
+- Task 2: in-app language setting (Persian / English), no AppCompat.
+  Settings has a "Language" row in the Appearance card that opens a
+  dialog with "فارسی" and "English" (each always in its own language);
+  the choice is persisted (AppLanguage FA/EN, default FA) and the
+  activity recreates on change. MainActivity applies the saved language
+  in attachBaseContext via a withAppLocale helper (Locale.setDefault +
+  config locale + layout direction, minSdk 26), so digits, month and
+  weekday names, number separators and RTL/LTR all follow the setting
+  while the calendar stays Jalali with the English month names in
+  English mode. Reminder notifications and the channel name read
+  strings through the same wrapped context, so they match the app
+  language too. Unit test for the pref-to-locale mapping
+  (AppLanguageTest); every string exists in both languages.
+
 ## [0.1.7]
 
 - Task 1: theme setting (System / Light / Dark). Settings has a new

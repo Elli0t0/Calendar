@@ -18,6 +18,7 @@ import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.InstallmentStore
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxStore
+import io.github.elli0t0.calendar.data.withAppLocale
 import io.github.elli0t0.calendar.ui.common.formatAmount
 import io.github.elli0t0.calendar.ui.common.formatJalaliDate
 import java.io.File
@@ -81,39 +82,44 @@ object ReminderScheduler {
 
     fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        // The channel name must be in the app language, not the system one.
+        val ctx = context.withAppLocale(AppSettings.readLanguage(context))
+        val manager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (manager.getNotificationChannel(CHANNEL_ID) != null) return
         val channel = NotificationChannel(
             CHANNEL_ID,
-            context.getString(R.string.reminders_channel_name),
+            ctx.getString(R.string.reminders_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         )
         manager.createNotificationChannel(channel)
     }
 
     fun postReminder(context: Context, reminder: Reminder) {
-        ensureChannel(context)
-        val intent = Intent(context, MainActivity::class.java).apply {
+        // Notification text (amount, date) must be in the app language,
+        // even when the receiver runs on the application context.
+        val ctx = context.withAppLocale(AppSettings.readLanguage(context))
+        ensureChannel(ctx)
+        val intent = Intent(ctx, MainActivity::class.java).apply {
             putExtra(EXTRA_EPOCH_DAY, reminder.dueDate.toEpochDay())
         }
         val pendingIntent = PendingIntent.getActivity(
-            context,
+            ctx,
             notificationId(reminder),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val text = context.getString(
+        val text = ctx.getString(
             R.string.amount_with_currency,
             formatAmount(reminder.amount)
-        ) + " · " + formatJalaliDate(context, reminder.dueDate)
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        ) + " · " + formatJalaliDate(ctx, reminder.dueDate)
+        val notification = NotificationCompat.Builder(ctx, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(reminder.title)
             .setContentText(text)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
-        NotificationManagerCompat.from(context).notify(notificationId(reminder), notification)
+        NotificationManagerCompat.from(ctx).notify(notificationId(reminder), notification)
     }
 
     private fun alarmPendingIntent(context: Context): PendingIntent =

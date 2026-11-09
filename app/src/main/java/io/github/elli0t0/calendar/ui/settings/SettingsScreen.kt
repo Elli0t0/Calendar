@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppLanguage
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.FirstDay
 import io.github.elli0t0.calendar.data.MarkerStyle
@@ -67,11 +68,15 @@ private fun markerStyleLabelRes(style: MarkerStyle): Int = when (style) {
 }
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    onLanguageChanged: () -> Unit = {},
+) {
     val scheme = MaterialTheme.colorScheme
     val settings by AppSettings.settings.collectAsState()
     var showFirstDayDialog by remember { mutableStateOf(false) }
     var showTimeDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -124,6 +129,12 @@ fun SettingsScreen(onBack: () -> Unit) {
                             onClick = { AppSettings.setThemeMode(mode) }
                         )
                     }
+                    HorizontalDivider(color = scheme.outlineVariant)
+                    SettingsRow(
+                        title = stringResource(R.string.settings_language),
+                        value = languageName(settings.language),
+                        onClick = { showLanguageDialog = true }
+                    )
                 }
                 SettingsCard(title = stringResource(R.string.settings_calendar)) {
                     SettingsRow(
@@ -169,6 +180,19 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
         }
+    }
+    if (showLanguageDialog) {
+        LanguageDialog(
+            current = settings.language,
+            onSelect = { lang ->
+                showLanguageDialog = false
+                if (lang != settings.language) {
+                    AppSettings.setLanguage(lang)
+                    onLanguageChanged()
+                }
+            },
+            onDismiss = { showLanguageDialog = false }
+        )
     }
     if (showFirstDayDialog) {
         FirstDayDialog(
@@ -299,6 +323,56 @@ private fun themeModeLabelRes(mode: ThemeMode): Int = when (mode) {
     ThemeMode.SYSTEM -> R.string.theme_system
     ThemeMode.LIGHT -> R.string.theme_light
     ThemeMode.DARK -> R.string.theme_dark
+}
+
+/** A language's name in its own language (never translated). */
+private fun languageName(lang: AppLanguage): String = when (lang) {
+    AppLanguage.FA -> "فارسی"
+    AppLanguage.EN -> "English"
+}
+
+/** Language picker: each option is always shown in its own language. */
+@Composable
+private fun LanguageDialog(
+    current: AppLanguage,
+    onSelect: (AppLanguage) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_language)) },
+        text = {
+            Column {
+                AppLanguage.entries.forEach { option ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(option) }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = current == option,
+                            onClick = { onSelect(option) }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = languageName(option),
+                            fontSize = 16.sp,
+                            color = scheme.onSurface
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.tx_dismiss))
+            }
+        }
+    )
 }
 
 /** One theme row: RadioButton + label, same row style as MarkerStyleRow. */

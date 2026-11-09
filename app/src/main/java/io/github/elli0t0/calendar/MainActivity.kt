@@ -1,6 +1,7 @@
 package io.github.elli0t0.calendar
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import java.time.LocalDate
@@ -55,6 +56,7 @@ import kotlinx.coroutines.launch
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.CalendarViewMode
 import io.github.elli0t0.calendar.data.ThemeMode
+import io.github.elli0t0.calendar.data.withAppLocale
 import io.github.elli0t0.calendar.data.CompositeMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentRepository
@@ -98,6 +100,12 @@ private fun viewTitleRes(mode: CalendarViewMode): Int = when (mode) {
 class MainActivity : ComponentActivity() {
     // Due date from a tapped reminder notification, if any.
     private val deepLinkEpochDay = mutableStateOf<Long?>(null)
+
+    // The app language applies before anything reads a string: AppSettings
+    // is not initialised yet here, so the pref is read directly.
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(base.withAppLocale(AppSettings.readLanguage(base)))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -283,7 +291,10 @@ class MainActivity : ComponentActivity() {
                                 .navigationBarsPadding()
                         ) {
                             if (showSettings) {
-                                SettingsScreen(onBack = { showSettings = false })
+                                SettingsScreen(
+                                    onBack = { showSettings = false },
+                                    onLanguageChanged = { recreate() }
+                                )
                             } else {
                                 when (tab) {
                                     Tab.CALENDAR -> CalendarScreen(

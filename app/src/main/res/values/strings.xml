@@ -98,6 +98,7 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="settings_language">Language</string>
     <string name="amount_with_currency">%1$s Toman</string>
     <string name="date_full">%1$s, %2$s %3$s %4$s</string>
     <string name="date_gregorian">%2$s %1$s, %3$s</string>

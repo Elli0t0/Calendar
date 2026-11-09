@@ -98,6 +98,7 @@
     <string name="theme_system">سیستم</string>
     <string name="theme_light">روشن</string>
     <string name="theme_dark">تیره</string>
+    <string name="settings_language">زبان</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>
