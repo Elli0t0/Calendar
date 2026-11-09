@@ -47,7 +47,6 @@ import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.data.TxType
 import io.github.elli0t0.calendar.data.occurrencesBetween
-import java.time.LocalDate
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.ui.calendar.markerColor
@@ -81,7 +80,6 @@ fun TransactionsScreen(onMenuClick: () -> Unit) {
 
     // Every occurrence with a date up to today counts (a series counts once
     // per occurrence, not once per series).
-    val today = remember { LocalDate.now() }
     val income = items.sumOf { tx ->
         val count = occurrencesBetween(tx, LocalDate.ofEpochDay(tx.epochDay), today).size
         if (tx.type == TxType.INCOME) tx.amount * count else 0L
