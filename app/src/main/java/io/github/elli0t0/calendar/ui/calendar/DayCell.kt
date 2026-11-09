@@ -3,15 +3,15 @@ package io.github.elli0t0.calendar.ui.calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -49,70 +49,89 @@ fun DayCell(
 ) {
     val scheme = MaterialTheme.colorScheme
     var cellModifier = Modifier
-        .aspectRatio(0.85f)
-        .clip(RoundedCornerShape(8.dp))
+        .aspectRatio(0.7f)
+        .clip(RoundedCornerShape(10.dp))
+        .background(scheme.surfaceContainerLow)
         .clickable(onClick = onClick)
     if (isSelected) {
-        cellModifier = cellModifier.border(2.dp, scheme.primary, RoundedCornerShape(8.dp))
+        cellModifier = cellModifier.border(
+            1.5.dp,
+            scheme.onSurface.copy(alpha = 0.6f),
+            RoundedCornerShape(10.dp)
+        )
     }
     if (!inCurrentMonth) {
         cellModifier = cellModifier.alpha(0.35f)
     }
     val numberColor = when {
-        isFriday && !isToday -> Color(0xFFE53935)
+        isFriday -> Color(0xFFE53935)
         else -> scheme.onSurface
     }
     Column(
-        modifier = cellModifier,
+        modifier = cellModifier.padding(top = 4.dp, bottom = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
     ) {
-        if (isToday) {
+        if (isSelected) {
             Box(
-                modifier = Modifier.size(40.dp)
-                    .background(scheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                modifier = Modifier.size(26.dp)
+                    .background(scheme.onSurface, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = jalali.day.toPersianDigits(),
-                    color = scheme.onSurface,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    color = scheme.background,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        } else if (isToday) {
+            Box(
+                modifier = Modifier.size(26.dp)
+                    .background(scheme.primary, RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = jalali.day.toPersianDigits(),
+                    color = scheme.onPrimary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         } else {
             Box(
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(26.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = jalali.day.toPersianDigits(),
                     color = numberColor,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
+        Spacer(modifier = Modifier.height(2.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            markers.take(3).forEach { marker ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(markerColor(marker.type))
+                )
+            }
+        }
+        Spacer(modifier = Modifier.weight(1f))
         Text(
             text = gregorian.dayOfMonth.toPersianDigits(),
             color = scheme.onSurfaceVariant,
             fontSize = 11.sp
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Row(
-            modifier = Modifier.height(3.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            markers.take(3).forEachIndexed { index, marker ->
-                if (index > 0) Spacer(modifier = Modifier.width(3.dp))
-                Box(
-                    modifier = Modifier
-                        .width(10.dp)
-                        .height(3.dp)
-                        .clip(CircleShape)
-                        .background(markerColor(marker.type))
-                )
-            }
-        }
     }
 }

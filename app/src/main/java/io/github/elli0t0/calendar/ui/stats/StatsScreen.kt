@@ -3,6 +3,7 @@ package io.github.elli0t0.calendar.ui.stats
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,6 +80,7 @@ fun StatsScreen(onMenuClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(scheme.background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
             .padding(bottom = 20.dp)

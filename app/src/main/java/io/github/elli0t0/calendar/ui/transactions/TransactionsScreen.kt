@@ -74,6 +74,7 @@ fun TransactionsScreen(onMenuClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(scheme.background)
             .padding(bottom = 20.dp)
     ) {
         Column(
@@ -145,7 +146,7 @@ fun TransactionsScreen(onMenuClick: () -> Unit) {
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 16.dp),
             containerColor = scheme.primary,
-            contentColor = Color.White
+            contentColor = scheme.onPrimary
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_add),

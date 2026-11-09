@@ -1,5 +1,6 @@
 package io.github.elli0t0.calendar.ui.installments
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +60,7 @@ fun InstallmentsScreen(onMenuClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(scheme.background)
             .padding(bottom = 20.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -123,7 +124,7 @@ fun InstallmentsScreen(onMenuClick: () -> Unit) {
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 16.dp),
             containerColor = scheme.primary,
-            contentColor = Color.White
+            contentColor = scheme.onPrimary
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_add),

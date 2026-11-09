@@ -2,6 +2,7 @@ package io.github.elli0t0.calendar.ui.calendar
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -26,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,6 +60,22 @@ import io.github.elli0t0.calendar.ui.transactions.TxSheet
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 
+/** Gregorian months overlapped by a Jalali month, e.g. «اکتبر – نوامبر ۲۰۲۶». */
+private fun gregorianOverlap(year: Int, month: Int): String {
+    val first = Jalali.toGregorian(io.github.elli0t0.calendar.jalali.JalaliDate(year, month, 1))
+    val last = Jalali.toGregorian(
+        io.github.elli0t0.calendar.jalali.JalaliDate(year, month, Jalali.monthLength(year, month))
+    )
+    val firstName = PersianNames.gregorianMonthName(first.monthValue)
+    val lastName = PersianNames.gregorianMonthName(last.monthValue)
+    val yearText = last.year.toPersianDigits()
+    return if (first.monthValue == last.monthValue) {
+        "$firstName $yearText"
+    } else {
+        "$firstName – $lastName $yearText"
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CalendarScreen(
@@ -82,14 +99,15 @@ fun CalendarScreen(
     val scope = rememberCoroutineScope()
     val displayed = addJalaliMonths(baseJalali.year, baseJalali.month, pagerState.currentPage - 600)
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp)
-            .padding(bottom = 20.dp)
-    ) {
-        // Slim header: menu, month name, today.
+    Box(modifier = modifier.fillMaxSize().background(scheme.background)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 96.dp)
+        ) {
+        // Header: menu, month + year + Gregorian line, today badge.
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -100,19 +118,46 @@ fun CalendarScreen(
                     contentDescription = stringResource(R.string.menu)
                 )
             }
-            Text(
-                text = PersianNames.jalaliMonthName(displayed.second),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = scheme.onSurface,
+            Column(
                 modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-            TextButton(onClick = {
-                selected = today
-                scope.launch { pagerState.animateScrollToPage(600) }
-            }) {
-                Text(text = stringResource(R.string.today), color = scheme.primary)
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = PersianNames.jalaliMonthName(displayed.second),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "${displayed.first.toPersianDigits()} · ${gregorianOverlap(displayed.first, displayed.second)}",
+                    fontSize = 12.sp,
+                    color = scheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+            Box(
+                modifier = Modifier.size(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(2.dp, scheme.onSurface, RoundedCornerShape(8.dp))
+                        .clickable {
+                            selected = today
+                            scope.launch { pagerState.animateScrollToPage(600) }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = Jalali.toJalali(today).day.toPersianDigits(),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = scheme.onSurface
+                    )
+                }
             }
         }
 
@@ -245,35 +290,38 @@ fun CalendarScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(scheme.surfaceVariant)
-                        .clickable { editingTx = null; showSheet = true }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(
-                                R.string.tx_add_on_day,
-                                jalali.day.toPersianDigits(),
-                                PersianNames.jalaliMonthName(jalali.month)
-                            ),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = scheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            painter = painterResource(R.drawable.ic_add),
-                            contentDescription = null,
-                            tint = scheme.onSurface
-                        )
-                    }
-                }
+            }
+        }
+    }
+        // Add pill: anchored to the bottom of the screen, over the scrolling content.
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+                .height(56.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(scheme.surfaceVariant)
+                .clickable { editingTx = null; showSheet = true }
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(
+                        R.string.tx_add_on_day,
+                        Jalali.toJalali(selected).day.toPersianDigits(),
+                        PersianNames.jalaliMonthName(Jalali.toJalali(selected).month)
+                    ),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.onSurface
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    painter = painterResource(R.drawable.ic_add),
+                    contentDescription = null,
+                    tint = scheme.onSurface
+                )
             }
         }
     }

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.9]
+
+- Color fix: full Material3 schemes for dark and light (no baseline
+  purple), window background follows day/night, every screen root paints
+  scheme.background, no hardcoded text/icon colors
+- Drawer is now a floating rounded panel (78% width, 12dp insets, 28dp
+  corners, surface color, no shadow) with a menu button + divider header
+  and explicit selected/unselected item colors
+- Month header: 24sp month name with year + Gregorian line, 36dp today
+  badge that jumps to today
+- Grid: rounded surfaceContainerLow tiles with 3dp gaps, boxed
+  today/selected numbers, full-width stacked marker bars
+- Add pill is now a fixed 56dp bottom overlay; day section has 96dp
+  bottom padding
+
 ## [0.0.8]
 
 - Side drawer navigation replaces the bottom pill (4 tabs only); back

@@ -203,7 +203,7 @@ private fun RowScope.TypeChip(
     ) {
         Text(
             text = label,
-            color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (selected) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
     }

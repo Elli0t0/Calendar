@@ -1,5 +1,6 @@
 package io.github.elli0t0.calendar.ui.calendar
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
 import io.github.elli0t0.calendar.data.TxRepository
@@ -49,9 +51,15 @@ fun MonthGrid(
     TxRepository.items.collectAsState()
     InstallmentRepository.items.collectAsState()
     val cells = monthCells(year, month)
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
         cells.chunked(7).forEach { week ->
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
                 week.forEach { date ->
                     Box(modifier = Modifier.weight(1f)) {
                         val jalali = Jalali.toJalali(date)
