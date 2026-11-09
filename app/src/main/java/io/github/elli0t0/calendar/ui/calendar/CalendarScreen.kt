@@ -62,6 +62,7 @@ import java.time.LocalDate
 import kotlinx.coroutines.launch
 
 /** Gregorian months overlapped by a Jalali month, e.g. «اکتبر – نوامبر ۲۰۲۶». */
+@Composable
 private fun gregorianOverlap(year: Int, month: Int): String {
     val first = Jalali.toGregorian(io.github.elli0t0.calendar.jalali.JalaliDate(year, month, 1))
     val last = Jalali.toGregorian(
