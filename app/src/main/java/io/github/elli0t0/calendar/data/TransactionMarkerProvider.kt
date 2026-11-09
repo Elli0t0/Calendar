@@ -13,9 +13,10 @@ fun Transaction.toDayMarker(): DayMarker = DayMarker(
 /** Real markers from stored transactions (replaces the debug fake). */
 class TransactionMarkerProvider : MarkerProvider {
     override fun markersFor(date: LocalDate): List<DayMarker> {
-        val day = date.toEpochDay()
+        // Evaluated only for the visible days, so a repeating event shows on
+        // every matching day without precomputing its whole series.
         return TxRepository.items.value
-            .filter { it.epochDay == day }
+            .filter { occursOn(it, date) }
             .map { it.toDayMarker() }
     }
 }

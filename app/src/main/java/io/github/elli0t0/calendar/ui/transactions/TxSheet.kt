@@ -25,9 +25,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.MarkerType
+import io.github.elli0t0.calendar.data.Repeat
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.data.TxType
@@ -62,6 +65,15 @@ import java.time.LocalDate
 
 private val IncomeGreen = Color(0xFF43A047)
 private val ExpenseRed = Color(0xFFE53935)
+
+/** String resource for a repeat choice. */
+fun repeatLabelRes(repeat: Repeat): Int = when (repeat) {
+    Repeat.NONE -> R.string.repeat_none
+    Repeat.DAILY -> R.string.repeat_daily
+    Repeat.WEEKLY -> R.string.repeat_weekly
+    Repeat.MONTHLY -> R.string.repeat_monthly
+    Repeat.YEARLY -> R.string.repeat_yearly
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,11 +88,20 @@ fun TxSheet(
     var date by remember { mutableStateOf(initial?.let { LocalDate.ofEpochDay(it.epochDay) } ?: initialDate) }
     var note by remember { mutableStateOf(initial?.note ?: "") }
     var colorIndex by remember { mutableStateOf(initial?.colorIndex ?: -1) }
+    var repeat by remember { mutableStateOf(initial?.repeat ?: Repeat.NONE) }
+    var repeatUntil by remember {
+        mutableStateOf(initial?.repeatUntilEpochDay?.let { LocalDate.ofEpochDay(it) })
+    }
     var showDateDialog by remember { mutableStateOf(false) }
+    var showRepeatDialog by remember { mutableStateOf(false) }
+    var showEndDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val scheme = MaterialTheme.colorScheme
     val amount = digits.toLongOrNull() ?: 0L
     val canSave = title.isNotBlank() && amount > 0
+    // A one-off event never ends; the end date is never before the start date.
+    val untilEpochDay =
+        if (repeat == Repeat.NONE) null else repeatUntil?.let { maxOf(it, date) }?.toEpochDay()
     val titleFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         if (initial == null) titleFocus.requestFocus()
@@ -158,6 +179,66 @@ fun TxSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .border(1.dp, scheme.outline, RoundedCornerShape(14.dp))
+                    .clickable { showRepeatDialog = true }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_repeat),
+                    contentDescription = null,
+                    tint = scheme.primary
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(text = stringResource(R.string.repeat_title), fontSize = 16.sp, color = scheme.onSurface)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(repeatLabelRes(repeat)),
+                    fontSize = 14.sp,
+                    color = scheme.onSurfaceVariant
+                )
+            }
+            if (repeat != Repeat.NONE) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .border(1.dp, scheme.outline, RoundedCornerShape(14.dp))
+                        .clickable { showEndDialog = true }
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_date_range),
+                        contentDescription = null,
+                        tint = scheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(text = stringResource(R.string.repeat_ends), fontSize = 16.sp, color = scheme.onSurface)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = repeatUntil?.let { fullJalaliDate(it) }
+                            ?: stringResource(R.string.repeat_never),
+                        fontSize = 14.sp,
+                        color = scheme.onSurfaceVariant
+                    )
+                    if (repeatUntil != null) {
+                        IconButton(onClick = { repeatUntil = null }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_close),
+                                contentDescription = stringResource(R.string.repeat_clear),
+                                tint = scheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -187,7 +268,10 @@ fun TxSheet(
             Button(
                 onClick = {
                     if (initial == null) {
-                        TxRepository.add(type, title.trim(), amount, date, note.trim(), colorIndex)
+                        TxRepository.add(
+                            type, title.trim(), amount, date, note.trim(), colorIndex,
+                            repeat, untilEpochDay
+                        )
                     } else {
                         TxRepository.update(
                             initial.copy(
@@ -196,7 +280,9 @@ fun TxSheet(
                                 amount = amount,
                                 epochDay = date.toEpochDay(),
                                 note = note.trim(),
-                                colorIndex = colorIndex
+                                colorIndex = colorIndex,
+                                repeat = repeat,
+                                repeatUntilEpochDay = untilEpochDay
                             )
                         )
                     }
@@ -212,7 +298,10 @@ fun TxSheet(
                 Row(modifier = Modifier.fillMaxWidth()) {
                     TextButton(
                         onClick = {
-                            TxRepository.add(type, title.trim(), amount, date, note.trim(), colorIndex)
+                            TxRepository.add(
+                                type, title.trim(), amount, date, note.trim(), colorIndex,
+                                repeat, untilEpochDay
+                            )
                             onDismiss()
                         },
                         modifier = Modifier.weight(1f)
@@ -229,7 +318,18 @@ fun TxSheet(
                 if (showDeleteConfirm) {
                     AlertDialog(
                         onDismissRequest = { showDeleteConfirm = false },
-                        title = { Text(stringResource(R.string.tx_delete_confirm)) },
+                        // Deleting a repeating event deletes the whole series.
+                        title = {
+                            Text(
+                                stringResource(
+                                    if (initial.repeat != Repeat.NONE) {
+                                        R.string.repeat_delete_confirm
+                                    } else {
+                                        R.string.tx_delete_confirm
+                                    }
+                                )
+                            )
+                        },
                         confirmButton = {
                             TextButton(onClick = {
                                 TxRepository.delete(initial.id)
@@ -254,6 +354,60 @@ fun TxSheet(
             current = date,
             onDismiss = { showDateDialog = false },
             onConfirm = { date = it; showDateDialog = false }
+        )
+    }
+    if (showRepeatDialog) {
+        AlertDialog(
+            onDismissRequest = { showRepeatDialog = false },
+            title = { Text(stringResource(R.string.repeat_title)) },
+            text = {
+                Column {
+                    Repeat.entries.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    repeat = option
+                                    if (option == Repeat.NONE) repeatUntil = null
+                                    showRepeatDialog = false
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = repeat == option,
+                                onClick = {
+                                    repeat = option
+                                    if (option == Repeat.NONE) repeatUntil = null
+                                    showRepeatDialog = false
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(repeatLabelRes(option)),
+                                fontSize = 16.sp,
+                                color = scheme.onSurface
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showRepeatDialog = false }) {
+                    Text(stringResource(R.string.tx_dismiss))
+                }
+            }
+        )
+    }
+    if (showEndDialog) {
+        JalaliDatePicker(
+            current = repeatUntil ?: date,
+            onDismiss = { showEndDialog = false },
+            onConfirm = {
+                // The end date can't be before the start date.
+                repeatUntil = maxOf(it, date)
+                showEndDialog = false
+            }
         )
     }
 }

@@ -43,6 +43,16 @@
     <string name="tx_toman">تومان</string>
     <string name="tx_dismiss">انصراف</string>
     <string name="tx_delete_confirm">حذف شود؟</string>
+    <string name="repeat_title">تکرار</string>
+    <string name="repeat_none">بدون تکرار</string>
+    <string name="repeat_daily">روزانه</string>
+    <string name="repeat_weekly">هفتگی</string>
+    <string name="repeat_monthly">ماهانه</string>
+    <string name="repeat_yearly">سالانه</string>
+    <string name="repeat_ends">پایان</string>
+    <string name="repeat_never">هرگز</string>
+    <string name="repeat_clear">پاک کردن</string>
+    <string name="repeat_delete_confirm">این رویداد و همه تکرارهایش حذف شود؟</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>

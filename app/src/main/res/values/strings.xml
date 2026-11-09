@@ -43,6 +43,16 @@
     <string name="tx_toman">Toman</string>
     <string name="tx_dismiss">Cancel</string>
     <string name="tx_delete_confirm">Delete?</string>
+    <string name="repeat_title">Repeat</string>
+    <string name="repeat_none">None</string>
+    <string name="repeat_daily">Daily</string>
+    <string name="repeat_weekly">Weekly</string>
+    <string name="repeat_monthly">Monthly</string>
+    <string name="repeat_yearly">Yearly</string>
+    <string name="repeat_ends">Ends</string>
+    <string name="repeat_never">Never</string>
+    <string name="repeat_clear">Clear</string>
+    <string name="repeat_delete_confirm">Delete this event and all its repeats?</string>
     <string name="amount_with_currency">%1$s Toman</string>
     <string name="date_full">%1$s, %2$s %3$s %4$s</string>
     <string name="date_gregorian">%2$s %1$s, %3$s</string>

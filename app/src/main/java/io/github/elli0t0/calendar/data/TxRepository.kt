@@ -41,11 +41,14 @@ object TxRepository {
         date: LocalDate,
         note: String = "",
         colorIndex: Int = -1,
+        repeat: Repeat = Repeat.NONE,
+        repeatUntilEpochDay: Long? = null,
     ) {
         val nextId = (_items.value.maxOfOrNull { it.id } ?: 0L) + 1L
         updateList(
             _items.value + Transaction(
-                nextId, type, title, amount, date.toEpochDay(), note, colorIndex
+                nextId, type, title, amount, date.toEpochDay(), note, colorIndex,
+                repeat, repeatUntilEpochDay
             )
         )
     }

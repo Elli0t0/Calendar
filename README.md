@@ -66,5 +66,7 @@ Keep the APK small — it is a deliberate feature, not an accident:
   tests unless asked. Don't add features that weren't asked for.
 - Do the steps in order and verify each before the next.
 - Final reply: only a short change list and the APK size in one line. Then
-  push to GitHub with the next patch version (`VERSION_PATCH` + 1); the
-  workflow must build the signed APK and publish the release.
+  push to GitHub with the next version: patches run 0.0.1–0.0.10, then
+  0.1.0–0.1.10, and so on (after .10 bump `VERSION_MINOR` and reset
+  `VERSION_PATCH` to 0); the workflow must build the signed APK and publish
+  the release.

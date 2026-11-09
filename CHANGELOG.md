@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0]
+
+- Stage 2: repeat. Transaction gains repeat (None/Daily/Weekly/Monthly/
+  Yearly) and an optional end date; pure occurrence engine (data/
+  Occurrences.kt) with unit tests for monthly/yearly clamping, inclusive end
+  date and weekly across a year boundary; repeating events show on every
+  matching day, stats and the summary count every occurrence, the list shows
+  each series once with a repeat icon and label; TxSheet has a Repeat row
+  (dialog list) and an Ends row (Never or a date, never before the start);
+  deleting a repeating event deletes the whole series.
+- Versions now run 0.0.1–0.0.10, then 0.1.0–0.1.10, and so on.
+
 ## [0.0.13]
 
 - Stage 1 re-verified under the language rules: note + color, event sheet,

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,9 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.MarkerType
+import io.github.elli0t0.calendar.data.Repeat
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.data.TxType
+import io.github.elli0t0.calendar.data.occurrencesBetween
+import java.time.LocalDate
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.ui.calendar.markerColor
@@ -75,8 +79,17 @@ fun TransactionsScreen(onMenuClick: () -> Unit) {
     var editing by remember { mutableStateOf<Transaction?>(null) }
     val today = remember { LocalDate.now() }
 
-    val income = items.filter { it.type == TxType.INCOME }.sumOf { it.amount }
-    val expense = items.filter { it.type == TxType.EXPENSE }.sumOf { it.amount }
+    // Every occurrence with a date up to today counts (a series counts once
+    // per occurrence, not once per series).
+    val today = remember { LocalDate.now() }
+    val income = items.sumOf { tx ->
+        val count = occurrencesBetween(tx, LocalDate.ofEpochDay(tx.epochDay), today).size
+        if (tx.type == TxType.INCOME) tx.amount * count else 0L
+    }
+    val expense = items.sumOf { tx ->
+        val count = occurrencesBetween(tx, LocalDate.ofEpochDay(tx.epochDay), today).size
+        if (tx.type == TxType.EXPENSE) tx.amount * count else 0L
+    }
     val balance = income - expense
     val groups = items.groupBy { it.epochDay }.toSortedMap(compareByDescending { it })
 
@@ -255,6 +268,22 @@ private fun TxRow(tx: Transaction, onClick: () -> Unit) {
                     fontSize = 16.sp,
                     color = scheme.onSurface
                 )
+                if (tx.repeat != Repeat.NONE) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_repeat),
+                            contentDescription = null,
+                            tint = scheme.onSurfaceVariant,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(repeatLabelRes(tx.repeat)),
+                            fontSize = 13.sp,
+                            color = scheme.onSurfaceVariant
+                        )
+                    }
+                }
                 if (tx.note.isNotBlank()) {
                     Text(
                         text = tx.note,
