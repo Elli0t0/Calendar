@@ -1,8 +1,10 @@
 package io.github.elli0t0.calendar.ui.transactions
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -18,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -112,7 +113,8 @@ fun TransactionsScreen(onMenuClick: () -> Unit) {
                 IconButton(onClick = onMenuClick) {
                     Icon(
                         painter = painterResource(R.drawable.ic_menu),
-                        contentDescription = stringResource(R.string.menu)
+                        contentDescription = stringResource(R.string.menu),
+                        tint = scheme.onSurface
                     )
                 }
                 Text(
@@ -136,12 +138,15 @@ fun TransactionsScreen(onMenuClick: () -> Unit) {
                     Text(
                         text = stringResource(R.string.tx_empty),
                         fontSize = 16.sp,
-                        color = scheme.onSurfaceVariant
+                        color = scheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
                     )
                 }
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(bottom = 96.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     groups.forEach { (epochDay, txs) ->
@@ -161,17 +166,23 @@ fun TransactionsScreen(onMenuClick: () -> Unit) {
                 }
             }
         }
-        FloatingActionButton(
-            onClick = { editing = null; showSheet = true },
+        // Bottom add pill, like the calendar's.
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp),
-            containerColor = scheme.primary,
-            contentColor = scheme.onPrimary
+                .padding(bottom = 16.dp)
+                .height(56.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(scheme.surfaceVariant)
+                .clickable { editing = null; showSheet = true }
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_add),
-                contentDescription = stringResource(R.string.tx_add)
+            Text(
+                text = stringResource(R.string.add_transaction),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = scheme.onSurface
             )
         }
     }

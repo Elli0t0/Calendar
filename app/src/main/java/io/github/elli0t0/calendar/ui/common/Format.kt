@@ -63,6 +63,19 @@ fun fullJalaliDate(date: LocalDate): String {
     )
 }
 
+/** Weekday + day + month, no year: «دوشنبه ۱۸ آبان» (fa) or
+ * «Monday, 18 Aban» (en). Used for the Day view title. */
+@Composable
+fun shortJalaliDate(date: LocalDate): String {
+    val j = Jalali.toJalali(date)
+    return stringResource(
+        R.string.date_day_short,
+        PersianNames.weekdayName(date),
+        toPersianDigits(j.day.toString()),
+        PersianNames.jalaliMonthName(j.month)
+    )
+}
+
 /** Same text as [fullJalaliDate], but plain (no @Composable) for use outside
  * composition, e.g. notification text. Reads the name arrays from [context]. */
 fun formatJalaliDate(context: Context, date: LocalDate): String {

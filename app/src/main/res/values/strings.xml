@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">تقویم</string>
+    <string name="app_name">Calendar</string>
     <string name="tab_calendar">Calendar</string>
     <string name="tab_transactions">Transactions</string>
     <string name="tab_installments">Installments</string>
@@ -89,6 +89,11 @@
     <string name="view_year">Year</string>
     <string name="nav_prev">Previous</string>
     <string name="nav_next">Next</string>
+    <string name="week_range_same_month">%1$s – %2$s %3$s</string>
+    <string name="week_range_cross_month">%1$s %2$s – %3$s %4$s</string>
+    <string name="date_day_short">%1$s, %2$s %3$s</string>
+    <string name="add_transaction">Add transaction +</string>
+    <string name="add_installment">Add installment +</string>
     <string name="amount_with_currency">%1$s Toman</string>
     <string name="date_full">%1$s, %2$s %3$s %4$s</string>
     <string name="date_gregorian">%2$s %1$s, %3$s</string>

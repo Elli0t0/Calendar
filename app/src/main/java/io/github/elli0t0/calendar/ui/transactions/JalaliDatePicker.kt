@@ -96,7 +96,8 @@ fun JalaliDatePicker(
                     }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_left),
-                            contentDescription = stringResource(R.string.previous_month)
+                            contentDescription = stringResource(R.string.previous_month),
+                            tint = scheme.onSurface
                         )
                     }
                     IconButton(onClick = {
@@ -106,7 +107,8 @@ fun JalaliDatePicker(
                     }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_right),
-                            contentDescription = stringResource(R.string.next_month)
+                            contentDescription = stringResource(R.string.next_month),
+                            tint = scheme.onSurface
                         )
                     }
                 }

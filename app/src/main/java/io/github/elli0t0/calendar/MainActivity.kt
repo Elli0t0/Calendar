@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Surface
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
@@ -116,6 +117,11 @@ class MainActivity : ComponentActivity() {
                     BackHandler(enabled = drawerState.isOpen) {
                         scope.launch { drawerState.close() }
                     }
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = scheme.background,
+                        contentColor = scheme.onBackground
+                    ) {
                     ModalNavigationDrawer(
                         drawerState = drawerState,
                         drawerContent = {
@@ -137,7 +143,8 @@ class MainActivity : ComponentActivity() {
                                     IconButton(onClick = { scope.launch { drawerState.close() } }) {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_menu),
-                                            contentDescription = stringResource(R.string.menu)
+                                            contentDescription = stringResource(R.string.menu),
+                                            tint = scheme.onSurface
                                         )
                                     }
                                     Spacer(modifier = Modifier.weight(1f))
@@ -147,7 +154,8 @@ class MainActivity : ComponentActivity() {
                                     }) {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_settings),
-                                            contentDescription = stringResource(R.string.settings_title)
+                                            contentDescription = stringResource(R.string.settings_title),
+                                            tint = scheme.onSurface
                                         )
                                     }
                                 }
@@ -169,7 +177,8 @@ class MainActivity : ComponentActivity() {
                                         icon = {
                                             Icon(
                                                 painter = painterResource(viewIcon(mode)),
-                                                contentDescription = null
+                                                contentDescription = null,
+                                                tint = if (tab == Tab.CALENDAR && settings.viewMode == mode) scheme.primary else scheme.onSurfaceVariant
                                             )
                                         },
                                         label = {
@@ -211,7 +220,8 @@ class MainActivity : ComponentActivity() {
                                         icon = {
                                             Icon(
                                                 painter = painterResource(tabIcon(item)),
-                                                contentDescription = null
+                                                contentDescription = null,
+                                                tint = if (item == tab) scheme.primary else scheme.onSurfaceVariant
                                             )
                                         },
                                         label = {
@@ -266,6 +276,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
+                    }
                     }
             }
         }

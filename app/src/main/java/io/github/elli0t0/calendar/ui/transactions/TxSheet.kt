@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -22,13 +24,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -69,6 +69,8 @@ import io.github.elli0t0.calendar.data.TxType
 import io.github.elli0t0.calendar.ui.calendar.markerColor
 import io.github.elli0t0.calendar.ui.common.formatGroupedDigits
 import io.github.elli0t0.calendar.ui.common.fullJalaliDate
+import io.github.elli0t0.calendar.ui.common.SheetSaveButton
+import io.github.elli0t0.calendar.ui.common.SheetTextField
 import io.github.elli0t0.calendar.ui.common.normalizeDigits
 import io.github.elli0t0.calendar.ui.theme.EventPalette
 import java.time.LocalDate
@@ -174,24 +176,19 @@ fun TxSheet(
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
+            SheetTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text(stringResource(R.string.tx_title)) },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(titleFocus)
+                label = stringResource(R.string.tx_title),
+                modifier = Modifier.focusRequester(titleFocus)
             )
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
+            SheetTextField(
                 value = formatGroupedDigits(digits),
                 onValueChange = { digits = normalizeDigits(it) },
-                label = { Text(stringResource(R.string.tx_amount)) },
+                label = stringResource(R.string.tx_amount),
                 suffix = { Text(stringResource(R.string.tx_toman)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.height(12.dp))
             Row(
@@ -304,13 +301,9 @@ fun TxSheet(
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            // The 9 color circles spread across the full width; if they do
+            // not fit, the row scrolls instead of clipping.
+            val circles: @Composable RowScope.() -> Unit = {
                 ColorCircle(
                     color = markerColor(
                         if (type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE,
@@ -327,16 +320,38 @@ fun TxSheet(
                     )
                 }
             }
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                if (28.dp * (1 + EventPalette.size) <= maxWidth) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        circles()
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        contentPadding = PaddingValues(end = 24.dp)
+                    ) {
+                        circles()
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
+            SheetTextField(
                 value = note,
                 onValueChange = { note = it },
-                label = { Text(stringResource(R.string.tx_note)) },
-                maxLines = 4,
-                modifier = Modifier.fillMaxWidth()
+                label = stringResource(R.string.tx_note),
+                singleLine = false,
+                maxLines = 4
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
+            SheetSaveButton(
                 onClick = {
                     if (initial == null) {
                         TxRepository.add(
@@ -361,10 +376,8 @@ fun TxSheet(
                     onDismiss()
                 },
                 enabled = canSave,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.tx_save))
-            }
+                label = stringResource(R.string.tx_save)
+            )
             if (initial != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
@@ -542,18 +555,28 @@ private fun RowScope.TypeChip(
     selectedColor: Color,
     onClick: () -> Unit,
 ) {
+    val scheme = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .weight(1f)
             .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) selectedColor else MaterialTheme.colorScheme.surfaceVariant)
+            .background(
+                if (selected) selectedColor.copy(alpha = 0.2f) else scheme.surfaceContainerHigh
+            )
+            .then(
+                if (selected) {
+                    Modifier.border(1.5.dp, selectedColor, RoundedCornerShape(20.dp))
+                } else {
+                    Modifier
+                }
+            )
             .clickable(onClick = onClick)
             .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = label,
-            color = if (selected) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (selected) selectedColor else scheme.onSurfaceVariant,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
     }
@@ -565,7 +588,7 @@ private fun ColorCircle(color: Color, selected: Boolean, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
-            .size(32.dp)
+            .size(28.dp)
             .clip(CircleShape)
             .background(color)
             .then(if (selected) Modifier.border(2.dp, scheme.onSurface, CircleShape) else Modifier)
@@ -577,7 +600,7 @@ private fun ColorCircle(color: Color, selected: Boolean, onClick: () -> Unit) {
                 painter = painterResource(R.drawable.ic_check),
                 contentDescription = null,
                 tint = scheme.inverseOnSurface,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(14.dp)
             )
         }
     }

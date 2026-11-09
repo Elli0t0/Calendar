@@ -60,7 +60,7 @@ import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.JalaliDate
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
-import io.github.elli0t0.calendar.ui.common.fullJalaliDate
+import io.github.elli0t0.calendar.ui.common.shortJalaliDate
 import io.github.elli0t0.calendar.ui.installments.InstallmentSheet
 import io.github.elli0t0.calendar.ui.search.SearchScreen
 import io.github.elli0t0.calendar.ui.transactions.TxSheet
@@ -147,8 +147,8 @@ fun CalendarScreen(
             24.sp
         )
         CalendarViewMode.DAY -> Triple(
-            fullJalaliDate(selected),
-            stringResource(
+            shortJalaliDate(selected),
+            "${selectedJalali.year.toPersianDigits()} · " + stringResource(
                 R.string.date_gregorian,
                 selected.dayOfMonth.toPersianDigits(),
                 PersianNames.gregorianMonthName(selected.monthValue),
@@ -204,7 +204,8 @@ fun CalendarScreen(
                 IconButton(onClick = onMenuClick) {
                     Icon(
                         painter = painterResource(R.drawable.ic_menu),
-                        contentDescription = stringResource(R.string.menu)
+                        contentDescription = stringResource(R.string.menu),
+                        tint = scheme.onSurface
                     )
                 }
                 Column(
@@ -452,7 +453,9 @@ fun CalendarScreen(
                 }
             }
         }
-        // Add pill: anchored to the bottom of the screen, over the scrolling content.
+        // Add pill: anchored to the bottom of the screen, over the scrolling
+        // content. Not in Year view, where it would cover the last months.
+        if (settings.viewMode != CalendarViewMode.YEAR) {
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -482,6 +485,7 @@ fun CalendarScreen(
                     tint = scheme.onSurface
                 )
             }
+        }
         }
     }
     }

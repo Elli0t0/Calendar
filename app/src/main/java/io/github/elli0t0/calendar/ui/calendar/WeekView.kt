@@ -57,20 +57,26 @@ fun weekStartFor(date: LocalDate, firstDay: FirstDay): LocalDate {
     return date.minusDays(offset.toLong())
 }
 
-/** The week's Shamsi range, e.g. "۱۸ تا ۲۴ آبان" or "۲۸ آبان تا ۴ آذر". */
+/** The week's Shamsi range ("16 – 22 Aban" / "۲۸ آبان تا ۴ آذر"). */
 @Composable
 fun weekRangeText(start: LocalDate, end: LocalDate): String {
     val startJalali = Jalali.toJalali(start)
     val endJalali = Jalali.toJalali(end)
     return if (startJalali.month == endJalali.month) {
-        "${startJalali.day.toPersianDigits()} تا " +
-            "${endJalali.day.toPersianDigits()} " +
+        stringResource(
+            R.string.week_range_same_month,
+            startJalali.day.toPersianDigits(),
+            endJalali.day.toPersianDigits(),
             PersianNames.jalaliMonthName(startJalali.month)
+        )
     } else {
-        "${startJalali.day.toPersianDigits()} " +
-            PersianNames.jalaliMonthName(startJalali.month) + " تا " +
-            "${endJalali.day.toPersianDigits()} " +
+        stringResource(
+            R.string.week_range_cross_month,
+            startJalali.day.toPersianDigits(),
+            PersianNames.jalaliMonthName(startJalali.month),
+            endJalali.day.toPersianDigits(),
             PersianNames.jalaliMonthName(endJalali.month)
+        )
     }
 }
 

@@ -382,14 +382,16 @@ private fun UpDownNumber(value: String, onUp: () -> Unit, onDown: () -> Unit) {
         IconButton(onClick = onUp) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_up),
-                contentDescription = null
+                contentDescription = null,
+                tint = scheme.onSurface
             )
         }
         Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         IconButton(onClick = onDown) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_down),
-                contentDescription = null
+                contentDescription = null,
+                tint = scheme.onSurface
             )
         }
     }

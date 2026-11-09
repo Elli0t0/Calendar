@@ -89,6 +89,11 @@
     <string name="view_year">سال</string>
     <string name="nav_prev">قبلی</string>
     <string name="nav_next">بعدی</string>
+    <string name="week_range_same_month">%1$s تا %2$s %3$s</string>
+    <string name="week_range_cross_month">%1$s %2$s تا %3$s %4$s</string>
+    <string name="date_day_short">%1$s %2$s %3$s</string>
+    <string name="add_transaction">افزودن تراکنش +</string>
+    <string name="add_installment">افزودن قسط +</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>

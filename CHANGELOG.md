@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.1.6]
+
+- Visual bug pass. Every icon now has an explicit tint (never
+  LocalContentColor), and the app root is a Surface with contentColor =
+  onBackground, so the hamburger, search, Stats and Year arrows and the
+  add/copy/delete icons are visible in dark and light. No Arabic-script
+  character remains in the English strings (the app name is now
+  "Calendar"); the Week range line is built from two string resources
+  ("16 – 22 Aban" / "28 Aban – 4 Azar", Persian «۱۶ تا ۲۲ آبان» /
+  «۲۸ آبان تا ۴ آذر») and no English remains in the Persian strings.
+  Day title is weekday + day + month only ("Monday, 18 Aban"), with the
+  year on the muted line ("1405 · November 9, 2026"). Empty states ("No
+  transactions yet", "No installments yet", Schedule, "No results") are
+  centered horizontally and vertically. The sheet's 9 color circles are
+  28dp, spread across the full width, scrolling with 24dp end padding
+  when they do not fit. The drawer gear is a proper gear and the Week
+  icon is three tall rounded rectangles. Transactions and Installments
+  use the same bottom add pill as the calendar ("Add transaction +" /
+  "Add installment +") with 96dp list bottom padding; the Year view
+  shows no add pill. Sheets and the search field use filled fields
+  (surfaceContainerHigh, 16dp corners, no indicator, 56dp, accent
+  cursor/label on focus), type chips in 20% type color with a 1.5dp
+  border, and a fully rounded Save button (accent when enabled,
+  surfaceContainerHigh with muted text when disabled).
+
 ## [0.1.5]
 
 - Stage 7: calendar views, part 2 (Week and Year). The drawer now lists

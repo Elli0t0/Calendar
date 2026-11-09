@@ -94,7 +94,8 @@ fun StatsScreen(onMenuClick: () -> Unit) {
             IconButton(onClick = onMenuClick) {
                 Icon(
                     painter = painterResource(R.drawable.ic_menu),
-                    contentDescription = stringResource(R.string.menu)
+                    contentDescription = stringResource(R.string.menu),
+                    tint = scheme.onSurface
                 )
             }
             Text(
@@ -121,7 +122,8 @@ fun StatsScreen(onMenuClick: () -> Unit) {
             }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_left),
-                    contentDescription = stringResource(R.string.previous_month)
+                    contentDescription = stringResource(R.string.previous_month),
+                    tint = scheme.onSurface
                 )
             }
             Text(
@@ -140,7 +142,8 @@ fun StatsScreen(onMenuClick: () -> Unit) {
             }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_right),
-                    contentDescription = stringResource(R.string.next_month)
+                    contentDescription = stringResource(R.string.next_month),
+                    tint = scheme.onSurface
                 )
             }
         }

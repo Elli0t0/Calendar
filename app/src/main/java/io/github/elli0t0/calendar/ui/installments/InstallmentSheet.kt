@@ -14,13 +14,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,6 +50,8 @@ import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.Remind
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
+import io.github.elli0t0.calendar.ui.common.SheetSaveButton
+import io.github.elli0t0.calendar.ui.common.SheetTextField
 import io.github.elli0t0.calendar.ui.common.formatGroupedDigits
 import io.github.elli0t0.calendar.ui.common.normalizeDigits
 import io.github.elli0t0.calendar.ui.common.toPersianDigits
@@ -109,38 +109,32 @@ fun InstallmentSheet(initial: Installment?, onDismiss: () -> Unit) {
                 color = scheme.onSurface
             )
             Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
+            SheetTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text(stringResource(R.string.tx_title)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                label = stringResource(R.string.tx_title)
             )
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
+            SheetTextField(
                 value = formatGroupedDigits(digits),
                 onValueChange = { digits = normalizeDigits(it) },
-                label = { Text(stringResource(R.string.inst_amount)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                label = stringResource(R.string.inst_amount),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
+                SheetTextField(
                     value = dayDigits,
                     onValueChange = { dayDigits = normalizeDigits(it).take(2) },
-                    label = { Text(stringResource(R.string.inst_day)) },
-                    singleLine = true,
+                    label = stringResource(R.string.inst_day),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-                OutlinedTextField(
+                SheetTextField(
                     value = countDigits,
                     onValueChange = { countDigits = normalizeDigits(it).take(3) },
-                    label = { Text(stringResource(R.string.inst_count)) },
-                    singleLine = true,
+                    label = stringResource(R.string.inst_count),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f)
                 )
@@ -214,7 +208,7 @@ fun InstallmentSheet(initial: Installment?, onDismiss: () -> Unit) {
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
+            SheetSaveButton(
                 onClick = {
                     if (initial == null) {
                         InstallmentRepository.add(
@@ -237,10 +231,8 @@ fun InstallmentSheet(initial: Installment?, onDismiss: () -> Unit) {
                     onDismiss()
                 },
                 enabled = canSave,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.tx_save))
-            }
+                label = stringResource(R.string.tx_save)
+            )
             if (initial != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 TextButton(
@@ -314,14 +306,16 @@ private fun MonthPickerColumn(value: String, onUp: () -> Unit, onDown: () -> Uni
         IconButton(onClick = onUp) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_up),
-                contentDescription = null
+                contentDescription = null,
+                tint = scheme.onSurface
             )
         }
         Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         IconButton(onClick = onDown) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_down),
-                contentDescription = null
+                contentDescription = null,
+                tint = scheme.onSurface
             )
         }
     }

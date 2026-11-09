@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
@@ -175,16 +177,22 @@ fun SearchScreen(onBack: () -> Unit, onSelectDate: (LocalDate) -> Unit) {
                 onValueChange = { query = it },
                 modifier = Modifier
                     .weight(1f)
+                    .heightIn(min = 56.dp)
                     .focusRequester(focusRequester),
                 placeholder = { Text(stringResource(R.string.search_hint)) },
                 singleLine = true,
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = scheme.surfaceVariant,
-                    unfocusedContainerColor = scheme.surfaceVariant,
-                    disabledContainerColor = scheme.surfaceVariant,
+                    focusedContainerColor = scheme.surfaceContainerHigh,
+                    unfocusedContainerColor = scheme.surfaceContainerHigh,
+                    disabledContainerColor = scheme.surfaceContainerHigh,
                     focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = scheme.primary,
+                    focusedTextColor = scheme.onSurface,
+                    unfocusedTextColor = scheme.onSurface,
+                    focusedPlaceholderColor = scheme.onSurfaceVariant,
+                    unfocusedPlaceholderColor = scheme.onSurfaceVariant
                 )
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -197,7 +205,9 @@ fun SearchScreen(onBack: () -> Unit, onSelectDate: (LocalDate) -> Unit) {
                 Text(
                     text = stringResource(R.string.no_results),
                     fontSize = 16.sp,
-                    color = scheme.onSurfaceVariant
+                    color = scheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
             }
         } else {
