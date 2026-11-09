@@ -20,7 +20,7 @@
     <string name="tx_save">Save</string>
     <string name="tx_delete">Delete</string>
     <string name="tx_cancel">Cancel</string>
-    <string name="tx_confirm">Confirm</string>
+    <string name="tx_confirm">OK</string>
     <string name="tx_pick_date">Pick a date</string>
     <string name="tx_empty">No transactions yet</string>
     <string name="inst_empty">No installments yet</string>

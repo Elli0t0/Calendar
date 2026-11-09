@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.13]
+
+- Stage 1 re-verified under the language rules: note + color, event sheet,
+  month-grid date picker and event-color display were already in from
+  0.0.10; the picker's confirm button now reads OK (was Confirm)
+
 ## [0.0.12]
 
 - Language follows the device: removed the forced Persian locale and the
