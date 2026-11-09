@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Repeat
 import io.github.elli0t0.calendar.data.Transaction
@@ -235,10 +236,11 @@ private fun RowScope.SummaryItem(label: String, value: Long, color: Color, modif
 @Composable
 private fun TxRow(tx: Transaction, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
+    val settings by AppSettings.settings.collectAsState()
     val color = if (tx.type == TxType.INCOME) IncomeGreen else ExpenseRed
     val barColor = markerColor(
         if (tx.type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE,
-        tx.colorIndex
+        tx.colorIndex, settings.markerStyle
     )
     Card(
         onClick = onClick,

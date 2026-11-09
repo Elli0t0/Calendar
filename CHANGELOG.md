@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.3]
+
+- Stage 5: calendar settings. AppSettings (SharedPreferences + StateFlow)
+  with first day (Saturday/Sunday/Monday), two Gregorian switches, marker
+  style and default reminder time; a settings screen (gear in the drawer
+  header, back arrow to close) with rounded 24dp cards for Calendar, Event
+  colors (four radio rows with three-bar previews) and Reminders (up/down
+  time dialog). The first day rotates the weekday letters and monthCells
+  (Friday stays red wherever it falls; the date picker follows because it
+  reuses monthCells) with new monthCells tests (default Saturday-first
+  unchanged, plus Monday-first). The Gregorian switches hide the tile
+  number (Shamsi number and markers centered) and the header line. Marker
+  colors scale saturation via HSV (very muted 0.45, muted 0.7, bright 1.0,
+  very bright 1.0 with 10% higher value) everywhere. The reminder time
+  feeds the scheduler and reschedules on change.
+
 ## [0.1.2]
 
 - Stage 4: selected-day section and search. The day section shows a muted

@@ -22,10 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.data.DayMarker
+import io.github.elli0t0.calendar.data.MarkerStyle
 import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.jalali.JalaliDate
 import io.github.elli0t0.calendar.jalali.toPersianDigits
@@ -34,10 +36,16 @@ import java.time.LocalDate
 
 /**
  * Color for a marker: the chosen palette color when one is set,
- * otherwise the color of its type.
+ * otherwise the color of its type. The marker style scales the
+ * saturation via HSV (very muted 0.45, muted 0.7, bright 1.0,
+ * very bright 1.0 with 10% higher value).
  */
-fun markerColor(type: MarkerType, colorIndex: Int = -1): Color =
-    if (colorIndex in EventPalette.indices) {
+fun markerColor(
+    type: MarkerType,
+    colorIndex: Int = -1,
+    style: MarkerStyle = MarkerStyle.MUTED,
+): Color {
+    val base = if (colorIndex in EventPalette.indices) {
         EventPalette[colorIndex]
     } else {
         when (type) {
@@ -46,6 +54,19 @@ fun markerColor(type: MarkerType, colorIndex: Int = -1): Color =
             MarkerType.INSTALLMENT -> Color(0xFFFB8C00)
         }
     }
+    val saturationFactor = when (style) {
+        MarkerStyle.VERY_MUTED -> 0.45f
+        MarkerStyle.MUTED -> 0.7f
+        MarkerStyle.BRIGHT -> 1f
+        MarkerStyle.VERY_BRIGHT -> 1f
+    }
+    val valueFactor = if (style == MarkerStyle.VERY_BRIGHT) 1.1f else 1f
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(base.toArgb(), hsv)
+    hsv[1] = (hsv[1] * saturationFactor).coerceIn(0f, 1f)
+    hsv[2] = (hsv[2] * valueFactor).coerceIn(0f, 1f)
+    return Color(android.graphics.Color.HSVToColor(hsv))
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -59,6 +80,8 @@ fun DayCell(
     markers: List<DayMarker>,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
+    showGregorian: Boolean = true,
+    markerStyle: MarkerStyle = MarkerStyle.MUTED,
 ) {
     val scheme = MaterialTheme.colorScheme
     var cellModifier = Modifier
@@ -83,6 +106,13 @@ fun DayCell(
     Column(
         modifier = cellModifier.padding(top = 4.dp, bottom = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
+        // Without the Gregorian number the Shamsi number and the markers
+        // are centered vertically.
+        verticalArrangement = if (showGregorian) {
+            Arrangement.Top
+        } else {
+            Arrangement.Center
+        },
     ) {
         if (isSelected) {
             Box(
@@ -136,15 +166,17 @@ fun DayCell(
                         .fillMaxWidth()
                         .height(3.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(markerColor(marker.type, marker.colorIndex))
+                        .background(markerColor(marker.type, marker.colorIndex, markerStyle))
                 )
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = gregorian.dayOfMonth.toPersianDigits(),
-            color = scheme.onSurfaceVariant,
-            fontSize = 11.sp
-        )
+        if (showGregorian) {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = gregorian.dayOfMonth.toPersianDigits(),
+                color = scheme.onSurfaceVariant,
+                fontSize = 11.sp
+            )
+        }
     }
 }

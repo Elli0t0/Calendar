@@ -1,5 +1,6 @@
 package io.github.elli0t0.calendar.notify
 
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.dueDate
@@ -32,6 +33,9 @@ internal fun collectReminders(
     from: LocalDate,
     to: LocalDate,
 ): List<Reminder> {
+    // The default reminder time (09:00) when settings were never loaded.
+    val hour = AppSettings.settings.value.reminderHour
+    val minute = AppSettings.settings.value.reminderMinute
     val out = mutableListOf<Reminder>()
     for (tx in transactions) {
         val offset = tx.remind.offsetDays() ?: continue
@@ -39,7 +43,7 @@ internal fun collectReminders(
             out.add(
                 Reminder(
                     tx.title, tx.amount, due,
-                    due.minusDays(offset.toLong()).atTime(9, 0),
+                    due.minusDays(offset.toLong()).atTime(hour, minute),
                     "tx-${tx.id}"
                 )
             )
@@ -54,7 +58,7 @@ internal fun collectReminders(
                 out.add(
                     Reminder(
                         inst.title, inst.amountPerMonth, due,
-                        due.minusDays(offset.toLong()).atTime(9, 0),
+                        due.minusDays(offset.toLong()).atTime(hour, minute),
                         "inst-${inst.id}-$k"
                     )
                 )

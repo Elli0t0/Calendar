@@ -42,8 +42,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.InstallmentRepository
+import io.github.elli0t0.calendar.data.MarkerStyle
 import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Repeat
 import io.github.elli0t0.calendar.data.Transaction
@@ -91,6 +93,7 @@ fun searchResults(
     transactions: List<Transaction>,
     installments: List<Installment>,
     today: LocalDate,
+    markerStyle: MarkerStyle = MarkerStyle.MUTED,
 ): List<SearchResult> {
     val q = normalizeForSearch(query)
     if (q.isEmpty()) return emptyList()
@@ -111,7 +114,7 @@ fun searchResults(
                 tx.title, tx.amount, date,
                 markerColor(
                     if (isIncome) MarkerType.INCOME else MarkerType.EXPENSE,
-                    tx.colorIndex
+                    tx.colorIndex, markerStyle
                 ),
                 if (isIncome) Color(0xFF43A047) else Color(0xFFE53935)
             )
@@ -141,12 +144,13 @@ fun SearchScreen(onBack: () -> Unit, onSelectDate: (LocalDate) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val transactions by TxRepository.items.collectAsState()
     val installments by InstallmentRepository.items.collectAsState()
+    val settings by AppSettings.settings.collectAsState()
     var query by remember { mutableStateOf("") }
     val today = remember { LocalDate.now() }
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
-    val results = remember(query, transactions, installments) {
-        searchResults(query, transactions, installments, today)
+    val results = remember(query, transactions, installments, settings.markerStyle) {
+        searchResults(query, transactions, installments, today, settings.markerStyle)
     }
     Column(
         modifier = Modifier

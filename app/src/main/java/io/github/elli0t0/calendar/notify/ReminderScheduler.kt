@@ -13,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import io.github.elli0t0.calendar.BuildConfig
 import io.github.elli0t0.calendar.MainActivity
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.InstallmentStore
 import io.github.elli0t0.calendar.data.Transaction
@@ -46,6 +47,8 @@ object ReminderScheduler {
 
     /** Re-arms the single alarm from the files on disk. */
     fun reschedule(context: Context) {
+        // Load the stored reminder time (and any other settings) first.
+        AppSettings.init(context)
         val (transactions, installments) = loadFromDisk(context)
         reschedule(context, transactions, installments)
     }

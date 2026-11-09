@@ -41,6 +41,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +59,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Remind
 import io.github.elli0t0.calendar.data.Repeat
@@ -99,6 +101,7 @@ fun TxSheet(
     initialDate: LocalDate,
     onDismiss: () -> Unit,
 ) {
+    val settings by AppSettings.settings.collectAsState()
     var type by remember { mutableStateOf(initial?.type ?: TxType.INCOME) }
     var title by remember { mutableStateOf(initial?.title ?: "") }
     var digits by remember { mutableStateOf(initial?.amount?.toString() ?: "") }
@@ -309,7 +312,10 @@ fun TxSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ColorCircle(
-                    color = markerColor(if (type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE),
+                    color = markerColor(
+                        if (type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE,
+                        -1, settings.markerStyle
+                    ),
                     selected = colorIndex == -1,
                     onClick = { colorIndex = -1 }
                 )

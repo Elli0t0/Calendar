@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.elli0t0.calendar.data.AppSettings
+import io.github.elli0t0.calendar.data.FirstDay
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
 import io.github.elli0t0.calendar.data.TxRepository
@@ -23,13 +25,35 @@ fun addJalaliMonths(year: Int, month: Int, delta: Int): Pair<Int, Int> {
     return Pair(Math.floorDiv(total, 12), Math.floorMod(total, 12) + 1)
 }
 
+/** Index of the first day in the Saturday-first week (Saturday = 0). */
+fun firstDayIndex(firstDay: FirstDay): Int = when (firstDay) {
+    FirstDay.SATURDAY -> 0
+    FirstDay.SUNDAY -> 1
+    FirstDay.MONDAY -> 2
+}
+
+/** Weekday letters in the Saturday-first order, rotated to [firstDay]. */
+fun orderedWeekdayLetters(letters: List<String>, firstDay: FirstDay): List<String> {
+    val start = firstDayIndex(firstDay)
+    return letters.drop(start) + letters.take(start)
+}
+
+/** Index of Friday in a week starting on [firstDay]. */
+fun fridayIndex(firstDay: FirstDay): Int = (6 - firstDayIndex(firstDay) + 7) % 7
+
 /**
  * 42 Gregorian cells for a Jalali month: the Gregorian date of day 1, backed
- * up to the Saturday starting that week (Saturday = 0), then filled forward.
+ * up to the first day of that week, then filled forward.
  */
-fun monthCells(year: Int, month: Int): List<LocalDate> {
+fun monthCells(
+    year: Int,
+    month: Int,
+    firstDay: FirstDay = FirstDay.SATURDAY,
+): List<LocalDate> {
     val first = Jalali.toGregorian(JalaliDate(year, month, 1))
-    val offset = PersianNames.weekdayIndex(first.dayOfWeek)
+    val offset = (
+        PersianNames.weekdayIndex(first.dayOfWeek) - firstDayIndex(firstDay) + 7
+        ) % 7
     val start = first.minusDays(offset.toLong())
     return (0 until 42).map { start.plusDays(it.toLong()) }
 }
@@ -51,7 +75,8 @@ fun MonthGrid(
     // content would be skipped because none of MonthGrid's parameters change.
     TxRepository.items.collectAsState()
     InstallmentRepository.items.collectAsState()
-    val cells = monthCells(year, month)
+    val settings by AppSettings.settings.collectAsState()
+    val cells = monthCells(year, month, settings.firstDay)
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(3.dp)
@@ -73,7 +98,9 @@ fun MonthGrid(
                             inCurrentMonth = jalali.month == month,
                             markers = markerProvider.markersFor(date),
                             onClick = { onSelect(date) },
-                            onLongClick = { onLongClick(date) }
+                            onLongClick = { onLongClick(date) },
+                            showGregorian = settings.showGregorianInTiles,
+                            markerStyle = settings.markerStyle
                         )
                     }
                 }

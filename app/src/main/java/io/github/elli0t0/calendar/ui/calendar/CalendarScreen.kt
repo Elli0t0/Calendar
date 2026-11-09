@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
@@ -103,6 +104,7 @@ fun CalendarScreen(
     // transactions change, so cells and the card below re-read fresh markers.
     val transactions by TxRepository.items.collectAsState()
     val installments by InstallmentRepository.items.collectAsState()
+    val settings by AppSettings.settings.collectAsState()
     val today = remember { LocalDate.now() }
     var selected by remember { mutableStateOf(today) }
     var showSheet by remember { mutableStateOf(false) }
@@ -170,12 +172,14 @@ fun CalendarScreen(
                     color = scheme.onSurface,
                     textAlign = TextAlign.Center
                 )
-                Text(
-                    text = "${displayed.first.toPersianDigits()} · ${gregorianOverlap(displayed.first, displayed.second)}",
-                    fontSize = 12.sp,
-                    color = scheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
+                if (settings.showGregorianInHeader) {
+                    Text(
+                        text = "${displayed.first.toPersianDigits()} · ${gregorianOverlap(displayed.first, displayed.second)}",
+                        fontSize = 12.sp,
+                        color = scheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
             IconButton(onClick = { showSearch = true }) {
                 Icon(
@@ -211,21 +215,26 @@ fun CalendarScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Weekday row, week starts Saturday. Friday letter in red.
+        // Weekday row, starting on the chosen first day. Friday letter in red.
         Row(modifier = Modifier.fillMaxWidth()) {
-            PersianNames.weekdayLetters().forEachIndexed { index, letter ->
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = letter,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = if (index == 6) Color(0xFFE53935) else scheme.onSurfaceVariant
-                    )
+            orderedWeekdayLetters(PersianNames.weekdayLetters(), settings.firstDay)
+                .forEachIndexed { index, letter ->
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = letter,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = if (index == fridayIndex(settings.firstDay)) {
+                                Color(0xFFE53935)
+                            } else {
+                                scheme.onSurfaceVariant
+                            }
+                        )
+                    }
                 }
-            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -339,7 +348,9 @@ fun CalendarScreen(
                     dayInstallments.forEach { (inst, k) ->
                         val paid = k in inst.paid
                         DayEventRow(
-                            barColor = markerColor(MarkerType.INSTALLMENT),
+                            barColor = markerColor(
+                                MarkerType.INSTALLMENT, -1, settings.markerStyle
+                            ),
                             title = inst.title,
                             note = null,
                             amountText = stringResource(
@@ -388,7 +399,9 @@ fun CalendarScreen(
                     }
                     dayTxs.filter { it.type == TxType.EXPENSE }.forEach { tx ->
                         DayEventRow(
-                            barColor = markerColor(MarkerType.EXPENSE, tx.colorIndex),
+                            barColor = markerColor(
+                                MarkerType.EXPENSE, tx.colorIndex, settings.markerStyle
+                            ),
                             title = tx.title,
                             note = tx.note.ifBlank { null },
                             amountText = stringResource(
@@ -401,7 +414,9 @@ fun CalendarScreen(
                     }
                     dayTxs.filter { it.type == TxType.INCOME }.forEach { tx ->
                         DayEventRow(
-                            barColor = markerColor(MarkerType.INCOME, tx.colorIndex),
+                            barColor = markerColor(
+                                MarkerType.INCOME, tx.colorIndex, settings.markerStyle
+                            ),
                             title = tx.title,
                             note = tx.note.ifBlank { null },
                             amountText = stringResource(

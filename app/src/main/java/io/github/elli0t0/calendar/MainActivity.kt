@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.CompositeMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentRepository
@@ -52,6 +54,7 @@ import io.github.elli0t0.calendar.notify.EXTRA_EPOCH_DAY
 import io.github.elli0t0.calendar.notify.ReminderScheduler
 import io.github.elli0t0.calendar.ui.calendar.CalendarScreen
 import io.github.elli0t0.calendar.ui.installments.InstallmentsScreen
+import io.github.elli0t0.calendar.ui.settings.SettingsScreen
 import io.github.elli0t0.calendar.ui.stats.StatsScreen
 import io.github.elli0t0.calendar.ui.transactions.TransactionsScreen
 import io.github.elli0t0.calendar.ui.nav.Tab
@@ -73,12 +76,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         deepLinkEpochDay.value =
             intent.getLongExtra(EXTRA_EPOCH_DAY, -1L).takeIf { it >= 0 }
+        AppSettings.init(applicationContext)
         TxRepository.init(applicationContext)
         InstallmentRepository.init(applicationContext)
         ReminderScheduler.reschedule(applicationContext)
         setContent {
             CalendarTheme {
                     var tab by remember { mutableStateOf(Tab.CALENDAR) }
+                    var showSettings by remember { mutableStateOf(false) }
                     val markerProvider = remember {
                         CompositeMarkerProvider(
                             listOf(TransactionMarkerProvider(), InstallmentMarkerProvider())
@@ -113,6 +118,16 @@ class MainActivity : ComponentActivity() {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_menu),
                                             contentDescription = stringResource(R.string.menu)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    IconButton(onClick = {
+                                        showSettings = true
+                                        scope.launch { drawerState.close() }
+                                    }) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_settings),
+                                            contentDescription = stringResource(R.string.settings_title)
                                         )
                                     }
                                 }
@@ -163,17 +178,21 @@ class MainActivity : ComponentActivity() {
                                 .statusBarsPadding()
                                 .navigationBarsPadding()
                         ) {
-                            when (tab) {
-                                Tab.CALENDAR -> CalendarScreen(
-                                    markerProvider = markerProvider,
-                                    onMenuClick = openDrawer,
-                                    initialSelectedDate = deepLinkEpochDay.value?.let {
-                                        LocalDate.ofEpochDay(it)
-                                    }
-                                )
-                                Tab.TRANSACTIONS -> TransactionsScreen(onMenuClick = openDrawer)
-                                Tab.INSTALLMENTS -> InstallmentsScreen(onMenuClick = openDrawer)
-                                Tab.STATS -> StatsScreen(onMenuClick = openDrawer)
+                            if (showSettings) {
+                                SettingsScreen(onBack = { showSettings = false })
+                            } else {
+                                when (tab) {
+                                    Tab.CALENDAR -> CalendarScreen(
+                                        markerProvider = markerProvider,
+                                        onMenuClick = openDrawer,
+                                        initialSelectedDate = deepLinkEpochDay.value?.let {
+                                            LocalDate.ofEpochDay(it)
+                                        }
+                                    )
+                                    Tab.TRANSACTIONS -> TransactionsScreen(onMenuClick = openDrawer)
+                                    Tab.INSTALLMENTS -> InstallmentsScreen(onMenuClick = openDrawer)
+                                    Tab.STATS -> StatsScreen(onMenuClick = openDrawer)
+                                }
                             }
                         }
                     }

@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,11 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
 import io.github.elli0t0.calendar.ui.calendar.addJalaliMonths
+import io.github.elli0t0.calendar.ui.calendar.fridayIndex
 import io.github.elli0t0.calendar.ui.calendar.monthCells
+import io.github.elli0t0.calendar.ui.calendar.orderedWeekdayLetters
 import java.time.LocalDate
 
 /**
@@ -54,6 +58,7 @@ fun JalaliDatePicker(
     onConfirm: (LocalDate) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val settings by AppSettings.settings.collectAsState()
     val today = remember { LocalDate.now() }
     var selected by remember { mutableStateOf(current) }
     val start = Jalali.toJalali(current)
@@ -107,7 +112,9 @@ fun JalaliDatePicker(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                    PersianNames.weekdayLetters().forEachIndexed { index, letter ->
+                    orderedWeekdayLetters(
+                        PersianNames.weekdayLetters(), settings.firstDay
+                    ).forEachIndexed { index, letter ->
                         Box(
                             modifier = Modifier.size(36.dp),
                             contentAlignment = Alignment.Center
@@ -115,14 +122,18 @@ fun JalaliDatePicker(
                             Text(
                                 text = letter,
                                 fontSize = 13.sp,
-                                color = if (index == 6) Color(0xFFE53935) else scheme.onSurfaceVariant
+                                color = if (index == fridayIndex(settings.firstDay)) {
+                                    Color(0xFFE53935)
+                                } else {
+                                    scheme.onSurfaceVariant
+                                }
                             )
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    monthCells(year, month).chunked(7).forEach { week ->
+                    monthCells(year, month, settings.firstDay).chunked(7).forEach { week ->
                         Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                             week.forEach { date ->
                                 val jalali = Jalali.toJalali(date)
