@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.2]
+
+- Stage 4: selected-day section and search. The day section shows a muted
+  income/expense summary line (non-zero parts only) and groups its cards as
+  installments, expenses, incomes; installment cards have a round check
+  button that toggles paid immediately (paid ones at 50% alpha with a
+  strikethrough title; paid installments already had no grid marker).
+  Long-press on a day tile opens the add sheet for that date. Search: a
+  search button in the calendar header opens a full-screen page (back
+  arrow, auto-focused filled rounded field); matching is case-insensitive
+  with Arabic ي/ك and Persian/Arabic digits normalized; repeating events
+  show their next occurrence, each unpaid installment due date is its own
+  row (max 12); results sort by date from today with past ones after;
+  tapping one jumps the pager to that month and selects the date.
+
 ## [0.1.1]
 
 - Stage 3: reminders. Transaction and Installment gain remind (None / On

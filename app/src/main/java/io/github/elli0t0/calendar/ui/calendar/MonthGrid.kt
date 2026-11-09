@@ -43,6 +43,7 @@ fun MonthGrid(
     markerProvider: MarkerProvider,
     onSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (LocalDate) -> Unit = {},
 ) {
     // Subscribe to the transaction and installment flows so the grid
     // recomposes (and the provider's markers are re-read) whenever one is
@@ -71,7 +72,8 @@ fun MonthGrid(
                             isFriday = PersianNames.isFriday(date),
                             inCurrentMonth = jalali.month == month,
                             markers = markerProvider.markersFor(date),
-                            onClick = { onSelect(date) }
+                            onClick = { onSelect(date) },
+                            onLongClick = { onLongClick(date) }
                         )
                     }
                 }

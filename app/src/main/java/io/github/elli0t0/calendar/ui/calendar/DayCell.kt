@@ -1,8 +1,9 @@
 package io.github.elli0t0.calendar.ui.calendar
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,7 @@ fun markerColor(type: MarkerType, colorIndex: Int = -1): Color =
         }
     }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DayCell(
     jalali: JalaliDate,
@@ -56,13 +58,14 @@ fun DayCell(
     inCurrentMonth: Boolean,
     markers: List<DayMarker>,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     var cellModifier = Modifier
         .aspectRatio(0.7f)
         .clip(RoundedCornerShape(10.dp))
         .background(scheme.surfaceContainerLow)
-        .clickable(onClick = onClick)
+        .combinedClickable(onClick = onClick, onLongClick = onLongClick)
     if (isSelected) {
         cellModifier = cellModifier.border(
             1.5.dp,

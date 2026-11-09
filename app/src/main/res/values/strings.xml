@@ -61,6 +61,11 @@
     <string name="remind_two_days_before">2 days before</string>
     <string name="remind_one_week_before">1 week before</string>
     <string name="remind_permission_hint">Notifications are off — enable them in Settings</string>
+    <string name="inst_paid">Paid</string>
+    <string name="inst_mark_paid">Mark as paid</string>
+    <string name="search_hint">Search</string>
+    <string name="no_results">No results</string>
+    <string name="back">Back</string>
     <string name="amount_with_currency">%1$s Toman</string>
     <string name="date_full">%1$s, %2$s %3$s %4$s</string>
     <string name="date_gregorian">%2$s %1$s, %3$s</string>
