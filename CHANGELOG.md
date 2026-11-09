@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.1]
+
+- Task 4b, drawer restyle to match the reference. The sheet is now
+  full height, 80% of the screen wide, no outer padding or floating,
+  with 28dp corners on the topEnd/bottomEnd only (so they mirror in
+  RTL). Top row is the hamburger (closes) and the settings gear, with
+  a dashed divider below it. Items are custom 52dp rows, 24dp icon +
+  16sp label; the selected item is a pill of secondaryContainer at 60%
+  alpha, inset 12dp from the edges. The divider between the views group
+  and the tabs group is dashed too (6dp dash, 6dp gap). The "Views"
+  label is gone; both groups and all behavior are unchanged. In RTL
+  the drawer opens from the right and the rows and corners mirror.
+
 ## [0.2.0]
 
 - Task 4a, Month + Day restyle to match the reference. Month grid tiles

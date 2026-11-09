@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,22 +20,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,13 +44,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import kotlinx.coroutines.launch
 import io.github.elli0t0.calendar.data.AppSettings
@@ -71,6 +74,7 @@ import io.github.elli0t0.calendar.ui.stats.StatsScreen
 import io.github.elli0t0.calendar.ui.transactions.TransactionsScreen
 import io.github.elli0t0.calendar.ui.nav.Tab
 import io.github.elli0t0.calendar.ui.theme.CalendarTheme
+import io.github.elli0t0.calendar.ui.theme.Dimens
 
 @DrawableRes
 private fun tabIcon(tab: Tab): Int = when (tab) {
@@ -95,6 +99,68 @@ private fun viewTitleRes(mode: CalendarViewMode): Int = when (mode) {
     CalendarViewMode.WEEK -> R.string.view_week
     CalendarViewMode.DAY -> R.string.view_day
     CalendarViewMode.SCHEDULE -> R.string.view_schedule
+}
+
+/** A drawer row: 52dp tall, 24dp icon + 16sp label. The selected row is a
+ * pill of secondaryContainer at 60% alpha, inset 12dp from the edges. */
+@Composable
+private fun DrawerItem(
+    @DrawableRes iconRes: Int,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.DrawerItemPadding)
+            .height(Dimens.DrawerItemHeight)
+            .clip(RoundedCornerShape(Dimens.DrawerItemCorner))
+            .background(
+                if (selected) {
+                    scheme.secondaryContainer.copy(alpha = 0.6f)
+                } else {
+                    Color.Transparent
+                }
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = if (selected) scheme.primary else scheme.onSurfaceVariant,
+            modifier = Modifier.size(Dimens.DrawerItemIcon)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = label,
+            fontSize = Dimens.DrawerItemLabel,
+            color = if (selected) scheme.onSurface else scheme.onSurfaceVariant
+        )
+    }
+}
+
+/** A 1dp dashed horizontal line (6dp dash, 6dp gap). */
+@Composable
+private fun DashedDivider(modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .drawBehind {
+                drawLine(
+                    color = scheme.outlineVariant,
+                    start = Offset(0f, size.height / 2),
+                    end = Offset(size.width, size.height / 2),
+                    strokeWidth = 1.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f))
+                )
+            }
+    )
 }
 
 class MainActivity : ComponentActivity() {
@@ -158,10 +224,11 @@ class MainActivity : ComponentActivity() {
                         drawerContent = {
                             val screenWidth = LocalConfiguration.current.screenWidthDp.dp
                             ModalDrawerSheet(
-                                modifier = Modifier
-                                    .padding(12.dp)
-                                    .width(screenWidth * 0.78f),
-                                drawerShape = RoundedCornerShape(28.dp),
+                                modifier = Modifier.width(screenWidth * 0.8f),
+                                drawerShape = RoundedCornerShape(
+                                    topEnd = Dimens.DrawerCorner,
+                                    bottomEnd = Dimens.DrawerCorner
+                                ),
                                 drawerContainerColor = scheme.surface,
                                 drawerTonalElevation = 0.dp
                             ) {
@@ -190,94 +257,37 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                 }
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                    color = scheme.outlineVariant
-                                )
+                                DashedDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
                                 // Group 1: calendar views (switch the Calendar screen's mode).
-                                Text(
-                                    text = stringResource(R.string.views_title),
-                                    fontSize = 13.sp,
-                                    color = scheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(
-                                        start = 28.dp, top = 12.dp, bottom = 4.dp
-                                    )
-                                )
                                 CalendarViewMode.entries.forEach { mode ->
-                                    NavigationDrawerItem(
-                                        icon = {
-                                            Icon(
-                                                painter = painterResource(viewIcon(mode)),
-                                                contentDescription = null,
-                                                tint = if (tab == Tab.CALENDAR && settings.viewMode == mode) scheme.primary else scheme.onSurfaceVariant
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                text = stringResource(viewTitleRes(mode)),
-                                                fontSize = 18.sp
-                                            )
-                                        },
+                                    DrawerItem(
+                                        iconRes = viewIcon(mode),
+                                        label = stringResource(viewTitleRes(mode)),
                                         selected = tab == Tab.CALENDAR &&
                                             settings.viewMode == mode,
                                         onClick = {
                                             AppSettings.setViewMode(mode)
                                             tab = Tab.CALENDAR
                                             scope.launch { drawerState.close() }
-                                        },
-                                        colors = NavigationDrawerItemDefaults.colors(
-                                            selectedContainerColor = scheme.secondaryContainer,
-                                            unselectedContainerColor = Color.Transparent,
-                                            selectedIconColor = scheme.primary,
-                                            unselectedIconColor = scheme.onSurfaceVariant,
-                                            selectedTextColor = scheme.onSurface,
-                                            unselectedTextColor = scheme.onSurfaceVariant
-                                        ),
-                                        shape = RoundedCornerShape(16.dp),
-                                        modifier = Modifier
-                                            .height(56.dp)
-                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                                        }
                                     )
                                 }
-                                HorizontalDivider(
+                                DashedDivider(
                                     modifier = Modifier.padding(
                                         horizontal = 16.dp, vertical = 8.dp
-                                    ),
-                                    color = scheme.outlineVariant
+                                    )
                                 )
                                 // Group 2: the other tabs.
                                 Tab.entries.filter { it != Tab.CALENDAR }.forEach { item ->
-                                    NavigationDrawerItem(
-                                        icon = {
-                                            Icon(
-                                                painter = painterResource(tabIcon(item)),
-                                                contentDescription = null,
-                                                tint = if (item == tab) scheme.primary else scheme.onSurfaceVariant
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                text = stringResource(item.titleRes),
-                                                fontSize = 18.sp
-                                            )
-                                        },
+                                    DrawerItem(
+                                        iconRes = tabIcon(item),
+                                        label = stringResource(item.titleRes),
                                         selected = item == tab,
                                         onClick = {
                                             tab = item
                                             scope.launch { drawerState.close() }
-                                        },
-                                        colors = NavigationDrawerItemDefaults.colors(
-                                            selectedContainerColor = scheme.secondaryContainer,
-                                            unselectedContainerColor = Color.Transparent,
-                                            selectedIconColor = scheme.primary,
-                                            unselectedIconColor = scheme.onSurfaceVariant,
-                                            selectedTextColor = scheme.onSurface,
-                                            unselectedTextColor = scheme.onSurfaceVariant
-                                        ),
-                                        shape = RoundedCornerShape(16.dp),
-                                        modifier = Modifier
-                                            .height(56.dp)
-                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                                        }
                                     )
                                 }
                             }

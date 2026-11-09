@@ -27,6 +27,12 @@ object Dimens {
     val PillHeight = 52.dp
     val PillCorner = 26.dp
     val PillText = 15.sp
+    val DrawerCorner = 28.dp
+    val DrawerItemHeight = 52.dp
+    val DrawerItemIcon = 24.dp
+    val DrawerItemLabel = 16.sp
+    val DrawerItemCorner = 26.dp
+    val DrawerItemPadding = 12.dp
     val CardCorner = 24.dp
     val RowCardCorner = 20.dp
     val SheetFieldCorner = 16.dp
