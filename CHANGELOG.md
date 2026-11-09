@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.5]
+
+- Calendar day card: "افزودن" button opens the add sheet for the selected
+  day; tapping a transaction row opens it in edit mode
+- Grid markers and the card update immediately after save/delete
+
 ## [0.0.4]
 
 - Transactions tab: summary card (income / expense / balance), list grouped

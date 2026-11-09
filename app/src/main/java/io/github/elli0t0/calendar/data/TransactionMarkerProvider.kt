@@ -5,7 +5,8 @@ import java.time.LocalDate
 fun Transaction.toDayMarker(): DayMarker = DayMarker(
     type = if (type == TxType.INCOME) MarkerType.INCOME else MarkerType.EXPENSE,
     title = title,
-    amount = amount
+    amount = amount,
+    refId = id
 )
 
 /** Real markers from stored transactions (replaces the debug fake). */

@@ -7,8 +7,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +23,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -46,11 +49,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.MarkerProvider
+import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.data.toDayMarker
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
+import io.github.elli0t0.calendar.ui.transactions.TxSheet
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 
@@ -82,6 +87,8 @@ fun CalendarScreen(
     val transactions by TxRepository.items.collectAsState()
     val today = remember { LocalDate.now() }
     var selected by remember { mutableStateOf(today) }
+    var showSheet by remember { mutableStateOf(false) }
+    var editingTx by remember { mutableStateOf<Transaction?>(null) }
     val baseJalali = remember { Jalali.toJalali(today) }
     val pagerState = rememberPagerState(initialPage = 600, pageCount = { 1201 })
     val scope = rememberCoroutineScope()
@@ -192,13 +199,29 @@ fun CalendarScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "${PersianNames.weekdayName(date)} ${jalali.day.toPersianDigits()} " +
-                            "${PersianNames.jalaliMonthName(jalali.month)} ${jalali.year.toPersianDigits()}",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = scheme.onSurface
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${PersianNames.weekdayName(date)} ${jalali.day.toPersianDigits()} " +
+                                "${PersianNames.jalaliMonthName(jalali.month)} ${jalali.year.toPersianDigits()}",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = scheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(
+                            onClick = { editingTx = null; showSheet = true },
+                            shape = RoundedCornerShape(20.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.tx_add),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
                     Text(
                         text = "${date.dayOfMonth.toPersianDigits()} " +
                             "${PersianNames.gregorianMonthName(date.monthValue)} ${date.year.toPersianDigits()}",
@@ -214,10 +237,18 @@ fun CalendarScreen(
                         )
                     } else {
                         markers.forEach { marker ->
-                            Row(
-                                modifier = Modifier
+                            val tx = marker.refId?.let { id ->
+                                transactions.firstOrNull { it.id == id }
+                            }
+                            val rowModifier = if (tx != null) {
+                                Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp),
+                                    .clickable { editingTx = tx; showSheet = true }
+                            } else {
+                                Modifier.fillMaxWidth()
+                            }
+                            Row(
+                                modifier = rowModifier.padding(vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
@@ -247,5 +278,12 @@ fun CalendarScreen(
                 }
             }
         }
+    }
+    if (showSheet) {
+        TxSheet(
+            initial = editingTx,
+            initialDate = selected,
+            onDismiss = { showSheet = false }
+        )
     }
 }
