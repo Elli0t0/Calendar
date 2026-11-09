@@ -1,5 +1,7 @@
 package io.github.elli0t0.calendar
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import java.util.Locale
 import io.github.elli0t0.calendar.data.CompositeMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentRepository
@@ -65,6 +68,20 @@ private fun tabIcon(tab: Tab): Int = when (tab) {
 }
 
 class MainActivity : ComponentActivity() {
+    /**
+     * The app is Persian on every device, whatever the system language is:
+     * force the fa locale for resource lookup, and keep the forced RTL
+     * layout direction in setContent below.
+     */
+    override fun attachBaseContext(newBase: Context) {
+        val locale = Locale("fa")
+        Locale.setDefault(locale)
+        val config = Configuration(newBase.resources.configuration).apply {
+            setLocale(locale)
+        }
+        super.attachBaseContext(newBase.createConfigurationContext(config))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         TxRepository.init(applicationContext)

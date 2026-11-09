@@ -170,7 +170,7 @@ private fun InstallmentCard(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = formatAmount(inst.amountPerMonth),
+                    text = stringResource(R.string.amount_with_currency, formatAmount(inst.amountPerMonth)),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = scheme.primary

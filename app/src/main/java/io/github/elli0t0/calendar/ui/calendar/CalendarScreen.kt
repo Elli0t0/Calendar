@@ -293,7 +293,10 @@ fun CalendarScreen(
                             }
                             if (marker.amount != null) {
                                 Text(
-                                    text = "${marker.amount.toPersianDigits()} تومان",
+                                    text = stringResource(
+                                        R.string.amount_with_currency,
+                                        marker.amount.toPersianDigits()
+                                    ),
                                     fontSize = 14.sp,
                                     color = scheme.onSurfaceVariant
                                 )

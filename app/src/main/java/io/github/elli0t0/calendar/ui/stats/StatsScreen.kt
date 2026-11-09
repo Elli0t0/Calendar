@@ -182,7 +182,7 @@ fun StatsScreen(onMenuClick: () -> Unit) {
                     color = scheme.onSurfaceVariant
                 )
                 Text(
-                    text = formatAmount(dueAmounts.sum()),
+                    text = stringResource(R.string.amount_with_currency, formatAmount(dueAmounts.sum())),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = DueOrange
@@ -238,7 +238,7 @@ private fun RowScope.SummaryMiniCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = formatAmount(value),
+                text = stringResource(R.string.amount_with_currency, formatAmount(value)),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = color

@@ -207,7 +207,7 @@ private fun RowScope.SummaryItem(label: String, value: Long, color: Color, modif
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = formatAmount(value),
+            text = stringResource(R.string.amount_with_currency, formatAmount(value)),
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = color
@@ -260,7 +260,7 @@ private fun TxRow(tx: Transaction, onClick: () -> Unit) {
                 }
             }
             Text(
-                text = formatAmount(tx.amount),
+                text = stringResource(R.string.amount_with_currency, formatAmount(tx.amount)),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = color

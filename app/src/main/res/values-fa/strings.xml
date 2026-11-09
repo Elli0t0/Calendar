@@ -43,4 +43,5 @@
     <string name="tx_toman">تومان</string>
     <string name="tx_dismiss">انصراف</string>
     <string name="tx_delete_confirm">حذف شود؟</string>
+    <string name="amount_with_currency">%1$s تومان</string>
 </resources>

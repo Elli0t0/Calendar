@@ -10,10 +10,12 @@ private val persianDigits = listOf('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷
 fun toPersianDigits(s: String): String =
     s.map { if (it in '0'..'9') persianDigits[it - '0'] else it }.joinToString("")
 
-/** 1500000 -> «۱٬۵۰۰٬۰۰۰ تومان». A negative value keeps its leading minus. */
+/** 1500000 -> «۱٬۵۰۰٬۰۰۰». A negative value keeps its leading minus.
+ * The currency word is not part of the number: callers wrap the result in
+ * R.string.amount_with_currency. */
 fun formatAmount(value: Long): String {
     val grouped = value.toString().reversed().chunked(3).joinToString("٬").reversed()
-    return "${toPersianDigits(grouped)} تومان"
+    return toPersianDigits(grouped)
 }
 
 /** Keeps only digits (Persian or English), capped so the value fits in a Long. */

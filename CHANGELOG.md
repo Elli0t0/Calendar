@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.11]
+
+- Language setup: values/strings.xml is now English (default), values-fa
+  holds the Persian translations; app_name stays «تقویم» in both. No UI
+  text is hardcoded in Kotlin anymore (the «تومان» after amounts moved to
+  amount_with_currency; formatAmount now returns only the grouped digits)
+- MainActivity forces the fa locale in attachBaseContext (Locale.setDefault
+  + configuration context) so the app stays Persian + RTL on any device
+- README gains a Working rules section
+
 ## [0.0.10]
 
 - Event sheet, stage 1: transactions store a note and a color (8-color
