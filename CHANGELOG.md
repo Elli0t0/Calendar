@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.8]
+
+- Side drawer navigation replaces the bottom pill (4 tabs only); back
+  closes the drawer
+- Month view restyled: slim header with menu + month name, smaller weekday
+  letters, today in a rounded box, card-less day section with a gray add
+  pill at the bottom
+
 ## [0.0.7]
 
 - Stats tab: month selector, income/expense/balance cards, installments

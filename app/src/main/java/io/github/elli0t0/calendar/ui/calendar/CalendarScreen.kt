@@ -10,7 +10,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,9 +22,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
@@ -62,26 +59,11 @@ import io.github.elli0t0.calendar.ui.transactions.TxSheet
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 
-/** Gregorian months overlapped by a Jalali month, e.g. «اکتبر – نوامبر ۲۰۲۶». */
-private fun gregorianOverlap(year: Int, month: Int): String {
-    val first = Jalali.toGregorian(io.github.elli0t0.calendar.jalali.JalaliDate(year, month, 1))
-    val last = Jalali.toGregorian(
-        io.github.elli0t0.calendar.jalali.JalaliDate(year, month, Jalali.monthLength(year, month))
-    )
-    val firstName = PersianNames.gregorianMonthName(first.monthValue)
-    val lastName = PersianNames.gregorianMonthName(last.monthValue)
-    val yearText = last.year.toPersianDigits()
-    return if (first.monthValue == last.monthValue) {
-        "$firstName $yearText"
-    } else {
-        "$firstName – $lastName $yearText"
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CalendarScreen(
     markerProvider: MarkerProvider,
+    onMenuClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -105,47 +87,32 @@ fun CalendarScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
-            .padding(bottom = 120.dp)
+            .padding(bottom = 20.dp)
     ) {
-        // Header: big Shamsi month + year, Gregorian overlap, prev/next, today.
+        // Slim header: menu, month name, today.
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "${PersianNames.jalaliMonthName(displayed.second)} ${displayed.first.toPersianDigits()}",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = scheme.onSurface
-                )
-                Text(
-                    text = gregorianOverlap(displayed.first, displayed.second),
-                    fontSize = 14.sp,
-                    color = scheme.onSurfaceVariant
+            IconButton(onClick = onMenuClick) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_menu),
+                    contentDescription = stringResource(R.string.menu)
                 )
             }
+            Text(
+                text = PersianNames.jalaliMonthName(displayed.second),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = scheme.onSurface,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
             TextButton(onClick = {
                 selected = today
                 scope.launch { pagerState.animateScrollToPage(600) }
             }) {
                 Text(text = stringResource(R.string.today), color = scheme.primary)
-            }
-            IconButton(onClick = {
-                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-            }) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
-                    contentDescription = stringResource(R.string.previous_month)
-                )
-            }
-            IconButton(onClick = {
-                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-            }) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_left),
-                    contentDescription = stringResource(R.string.next_month)
-                )
             }
         }
 
@@ -160,8 +127,8 @@ fun CalendarScreen(
                 ) {
                     Text(
                         text = letter,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Normal,
                         color = if (index == 6) Color(0xFFE53935) else scheme.onSurfaceVariant
                     )
                 }
@@ -196,94 +163,115 @@ fun CalendarScreen(
         ) { date ->
             val jalali = Jalali.toJalali(date)
             val markers = markerProvider.markersFor(date)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(containerColor = scheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "${PersianNames.weekdayName(date)} ${jalali.day.toPersianDigits()} " +
-                                "${PersianNames.jalaliMonthName(jalali.month)} ${jalali.year.toPersianDigits()}",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = scheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Button(
-                            onClick = { editingTx = null; showSheet = true },
-                            shape = RoundedCornerShape(20.dp),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.tx_add),
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "${date.dayOfMonth.toPersianDigits()} " +
-                            "${PersianNames.gregorianMonthName(date.monthValue)} ${date.year.toPersianDigits()}",
-                        fontSize = 14.sp,
-                        color = scheme.onSurfaceVariant
+                        text = jalali.day.toPersianDigits(),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = scheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    if (markers.isEmpty()) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
                         Text(
-                            text = stringResource(R.string.no_events),
-                            fontSize = 15.sp,
+                            text = PersianNames.weekdayName(date),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = scheme.onSurface
+                        )
+                        Text(
+                            text = "${PersianNames.jalaliMonthName(jalali.month)} ${jalali.year.toPersianDigits()}",
+                            fontSize = 14.sp,
                             color = scheme.onSurfaceVariant
                         )
-                    } else {
-                        markers.forEach { marker ->
-                            val isInstallment = marker.type == MarkerType.INSTALLMENT
-                            val tx = if (isInstallment) null else marker.refId?.let { id ->
-                                transactions.firstOrNull { it.id == id }
-                            }
-                            val inst = if (isInstallment) marker.refId?.let { id ->
-                                installments.firstOrNull { it.id == id }
-                            } else null
-                            val rowModifier = when {
-                                tx != null -> Modifier
-                                    .fillMaxWidth()
-                                    .clickable { editingTx = tx; showSheet = true }
-                                inst != null -> Modifier
-                                    .fillMaxWidth()
-                                    .clickable { editingInst = inst; showInstSheet = true }
-                                else -> Modifier.fillMaxWidth()
-                            }
-                            Row(
-                                modifier = rowModifier.padding(vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(4.dp)
-                                        .height(20.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(markerColor(marker.type))
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
+                    }
+                }
+                Text(
+                    text = "${date.dayOfMonth.toPersianDigits()} " +
+                        "${PersianNames.gregorianMonthName(date.monthValue)} ${date.year.toPersianDigits()}",
+                    fontSize = 14.sp,
+                    color = scheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                if (markers.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.no_events),
+                        fontSize = 15.sp,
+                        color = scheme.onSurfaceVariant
+                    )
+                } else {
+                    markers.forEach { marker ->
+                        val isInstallment = marker.type == MarkerType.INSTALLMENT
+                        val tx = if (isInstallment) null else marker.refId?.let { id ->
+                            transactions.firstOrNull { it.id == id }
+                        }
+                        val inst = if (isInstallment) marker.refId?.let { id ->
+                            installments.firstOrNull { it.id == id }
+                        } else null
+                        val rowModifier = when {
+                            tx != null -> Modifier
+                                .fillMaxWidth()
+                                .clickable { editingTx = tx; showSheet = true }
+                            inst != null -> Modifier
+                                .fillMaxWidth()
+                                .clickable { editingInst = inst; showInstSheet = true }
+                            else -> Modifier.fillMaxWidth()
+                        }
+                        Row(
+                            modifier = rowModifier.padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(4.dp)
+                                    .height(20.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(markerColor(marker.type))
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = marker.title,
+                                fontSize = 15.sp,
+                                color = scheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (marker.amount != null) {
                                 Text(
-                                    text = marker.title,
-                                    fontSize = 15.sp,
-                                    color = scheme.onSurface,
-                                    modifier = Modifier.weight(1f)
+                                    text = "${marker.amount.toPersianDigits()} تومان",
+                                    fontSize = 14.sp,
+                                    color = scheme.onSurfaceVariant
                                 )
-                                if (marker.amount != null) {
-                                    Text(
-                                        text = "${marker.amount.toPersianDigits()} تومان",
-                                        fontSize = 14.sp,
-                                        color = scheme.onSurfaceVariant
-                                    )
-                                }
                             }
                         }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(scheme.surfaceVariant)
+                        .clickable { editingTx = null; showSheet = true }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(
+                                R.string.tx_add_on_day,
+                                jalali.day.toPersianDigits(),
+                                PersianNames.jalaliMonthName(jalali.month)
+                            ),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = scheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add),
+                            contentDescription = null,
+                            tint = scheme.onSurface
+                        )
                     }
                 }
             }

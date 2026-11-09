@@ -50,17 +50,16 @@ fun DayCell(
     val scheme = MaterialTheme.colorScheme
     var cellModifier = Modifier
         .aspectRatio(0.85f)
-        .clip(RoundedCornerShape(14.dp))
+        .clip(RoundedCornerShape(8.dp))
         .clickable(onClick = onClick)
     if (isSelected) {
-        cellModifier = cellModifier.border(2.dp, scheme.primary, RoundedCornerShape(14.dp))
+        cellModifier = cellModifier.border(2.dp, scheme.primary, RoundedCornerShape(8.dp))
     }
     if (!inCurrentMonth) {
         cellModifier = cellModifier.alpha(0.35f)
     }
     val numberColor = when {
-        isToday -> Color.White
-        isFriday -> Color(0xFFE53935)
+        isFriday && !isToday -> Color(0xFFE53935)
         else -> scheme.onSurface
     }
     Column(
@@ -70,12 +69,13 @@ fun DayCell(
     ) {
         if (isToday) {
             Box(
-                modifier = Modifier.size(40.dp).background(scheme.primary, CircleShape),
+                modifier = Modifier.size(40.dp)
+                    .background(scheme.surfaceVariant, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = jalali.day.toPersianDigits(),
-                    color = Color.White,
+                    color = scheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )

@@ -36,4 +36,6 @@
     <string name="stats_empty">داده‌ای برای این ماه نیست</string>
     <string name="stats_due_title">اقساط این ماه</string>
     <string name="stats_installment_word">قسط</string>
+    <string name="menu">منو</string>
+    <string name="tx_add_on_day">افزودن در %1$s %2$s</string>
 </resources>

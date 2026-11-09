@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -56,7 +57,7 @@ private val ExpenseRed = Color(0xFFE53935)
 private val DueOrange = Color(0xFFFB8C00)
 
 @Composable
-fun StatsScreen() {
+fun StatsScreen(onMenuClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val transactions by TxRepository.items.collectAsState()
     val installments by InstallmentRepository.items.collectAsState()
@@ -80,8 +81,31 @@ fun StatsScreen() {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
-            .padding(bottom = 120.dp)
+            .padding(bottom = 20.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onMenuClick) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_menu),
+                    contentDescription = stringResource(R.string.menu)
+                )
+            }
+            Text(
+                text = stringResource(R.string.tab_stats),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = scheme.onSurface,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.width(48.dp))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +20,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
@@ -47,7 +50,7 @@ import io.github.elli0t0.calendar.ui.common.fullJalaliDate
 import io.github.elli0t0.calendar.ui.common.toPersianDigits
 
 @Composable
-fun InstallmentsScreen() {
+fun InstallmentsScreen(onMenuClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val items by InstallmentRepository.items.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
@@ -57,11 +60,36 @@ fun InstallmentsScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 120.dp)
+            .padding(bottom = 20.dp)
     ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onMenuClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_menu),
+                        contentDescription = stringResource(R.string.menu)
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.tab_installments),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.width(48.dp))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         if (items.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -72,7 +100,7 @@ fun InstallmentsScreen() {
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(start = 20.dp, top = 4.dp, end = 20.dp, bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -87,6 +115,7 @@ fun InstallmentsScreen() {
                     )
                 }
             }
+        }
         }
         FloatingActionButton(
             onClick = { editing = null; showSheet = true },

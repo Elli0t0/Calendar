@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
@@ -57,7 +59,7 @@ private fun groupHeader(epochDay: Long): String {
 }
 
 @Composable
-fun TransactionsScreen() {
+fun TransactionsScreen(onMenuClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val items by TxRepository.items.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
@@ -72,13 +74,36 @@ fun TransactionsScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 120.dp)
+            .padding(bottom = 20.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onMenuClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_menu),
+                        contentDescription = stringResource(R.string.menu)
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.tab_transactions),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.width(48.dp))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             SummaryCard(income = income, expense = expense, balance = balance)
             Spacer(modifier = Modifier.height(16.dp))
             if (items.isEmpty()) {
