@@ -302,6 +302,7 @@ fun InstallmentSheet(initial: Installment?, onDismiss: () -> Unit) {
 
 @Composable
 private fun MonthPickerColumn(value: String, onUp: () -> Unit, onDown: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(onClick = onUp) {
             Icon(

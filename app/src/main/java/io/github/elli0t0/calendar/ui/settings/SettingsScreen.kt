@@ -378,6 +378,7 @@ private fun TimePickerDialog(hour: Int, minute: Int, onDismiss: () -> Unit) {
 
 @Composable
 private fun UpDownNumber(value: String, onUp: () -> Unit, onDown: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(onClick = onUp) {
             Icon(
