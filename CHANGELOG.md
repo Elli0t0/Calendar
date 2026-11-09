@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.5]
+
+- Stage 7: calendar views, part 2 (Week and Year). The drawer now lists
+  Year, Month, Week, Day, Schedule. Week view: a pager of weeks (first day
+  from settings) with a 7-day strip (same today/selected styles and marker
+  dots as the day strip) and, below it, the 7 days as sections (day header
+  with number + weekday, the usual cards, a compact "No events" row when
+  empty); swiping moves the selected day to the same weekday, tapping a
+  strip day selects it and scrolls the list to its section; the header
+  shows the selected day's month + year and the week's Shamsi range. Year
+  view: the year number with prev/next arrows in the header and a slide
+  animation on change; a vertically scrolling 3-column grid of 12 mini
+  months (month name, weekday letters, 6x7 numbers, Friday red, today a
+  filled accent square, a 3dp dot under days with events in the first
+  marker's color, no Gregorian numbers); tapping a mini month switches to
+  Month view on that month, selecting today if it is inside that month,
+  otherwise the 1st. Markers are computed per mini month only when it is
+  composed (LazyVerticalGrid), so scrolling stays smooth.
+
 ## [0.1.4]
 
 - Stage 6: calendar views, part 1 (Day and Schedule). The drawer has two

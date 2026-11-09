@@ -72,13 +72,17 @@ private fun tabIcon(tab: Tab): Int = when (tab) {
 
 @DrawableRes
 private fun viewIcon(mode: CalendarViewMode): Int = when (mode) {
+    CalendarViewMode.YEAR -> R.drawable.ic_year
     CalendarViewMode.MONTH -> R.drawable.ic_date_range
+    CalendarViewMode.WEEK -> R.drawable.ic_week
     CalendarViewMode.DAY -> R.drawable.ic_day
     CalendarViewMode.SCHEDULE -> R.drawable.ic_schedule
 }
 
 private fun viewTitleRes(mode: CalendarViewMode): Int = when (mode) {
+    CalendarViewMode.YEAR -> R.string.view_year
     CalendarViewMode.MONTH -> R.string.view_month
+    CalendarViewMode.WEEK -> R.string.view_week
     CalendarViewMode.DAY -> R.string.view_day
     CalendarViewMode.SCHEDULE -> R.string.view_schedule
 }

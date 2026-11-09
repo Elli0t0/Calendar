@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 enum class FirstDay { SATURDAY, SUNDAY, MONDAY }
 enum class MarkerStyle { VERY_MUTED, MUTED, BRIGHT, VERY_BRIGHT }
-enum class CalendarViewMode { MONTH, DAY, SCHEDULE }
+enum class CalendarViewMode { YEAR, MONTH, WEEK, DAY, SCHEDULE }
 
 data class Settings(
     val firstDay: FirstDay = FirstDay.SATURDAY,

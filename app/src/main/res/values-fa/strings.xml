@@ -85,6 +85,10 @@
     <string name="view_month">ماه</string>
     <string name="view_day">روز</string>
     <string name="view_schedule">برنامه</string>
+    <string name="view_week">هفته</string>
+    <string name="view_year">سال</string>
+    <string name="nav_prev">قبلی</string>
+    <string name="nav_next">بعدی</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>

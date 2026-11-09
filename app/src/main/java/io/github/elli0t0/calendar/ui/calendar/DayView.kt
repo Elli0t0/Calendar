@@ -142,8 +142,9 @@ fun DayView(
     }
 }
 
+/** One cell of the 7-day strip: weekday letter, number, tiny marker dots. */
 @Composable
-private fun DayStripCell(
+fun DayStripCell(
     date: LocalDate,
     isSelected: Boolean,
     isToday: Boolean,

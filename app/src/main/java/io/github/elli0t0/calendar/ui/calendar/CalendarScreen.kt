@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,6 +57,7 @@ import io.github.elli0t0.calendar.data.MarkerProvider
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.jalali.Jalali
+import io.github.elli0t0.calendar.jalali.JalaliDate
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
 import io.github.elli0t0.calendar.ui.common.fullJalaliDate
@@ -123,6 +125,13 @@ fun CalendarScreen(
     }
     val scope = rememberCoroutineScope()
     val displayed = addJalaliMonths(baseJalali.year, baseJalali.month, pagerState.currentPage - 600)
+    // The year the Year view shows; follows the selected date on entry.
+    var yearViewYear by remember { mutableStateOf(Jalali.toJalali(today).year) }
+    LaunchedEffect(settings.viewMode) {
+        if (settings.viewMode == CalendarViewMode.YEAR) {
+            yearViewYear = Jalali.toJalali(selected).year
+        }
+    }
 
     // Header title and subtitle for the current mode.
     val selectedJalali = Jalali.toJalali(selected)
@@ -157,6 +166,20 @@ fun CalendarScreen(
             },
             24.sp
         )
+        CalendarViewMode.WEEK -> Triple(
+            "${PersianNames.jalaliMonthName(selectedJalali.month)} " +
+                selectedJalali.year.toPersianDigits(),
+            weekRangeText(
+                weekStartFor(selected, settings.firstDay),
+                weekStartFor(selected, settings.firstDay).plusDays(6)
+            ),
+            24.sp
+        )
+        CalendarViewMode.YEAR -> Triple(
+            yearViewYear.toPersianDigits(),
+            null,
+            24.sp
+        )
     }
 
     if (showSearch) {
@@ -188,22 +211,52 @@ fun CalendarScreen(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = headerTitle,
-                        fontSize = headerTitleSize,
-                        fontWeight = FontWeight.Bold,
-                        color = scheme.onSurface,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    if (headerSubtitle != null) {
+                    if (settings.viewMode == CalendarViewMode.YEAR) {
+                        // Year number with prev/next arrows.
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            IconButton(onClick = { yearViewYear-- }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_arrow_left),
+                                    contentDescription = stringResource(R.string.nav_prev),
+                                    tint = scheme.onSurface
+                                )
+                            }
+                            Text(
+                                text = yearViewYear.toPersianDigits(),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = scheme.onSurface,
+                                textAlign = TextAlign.Center
+                            )
+                            IconButton(onClick = { yearViewYear++ }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_arrow_right),
+                                    contentDescription = stringResource(R.string.nav_next),
+                                    tint = scheme.onSurface
+                                )
+                            }
+                        }
+                    } else {
                         Text(
-                            text = headerSubtitle,
-                            fontSize = 12.sp,
-                            color = scheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
+                            text = headerTitle,
+                            fontSize = headerTitleSize,
+                            fontWeight = FontWeight.Bold,
+                            color = scheme.onSurface,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
+                        if (headerSubtitle != null) {
+                            Text(
+                                text = headerSubtitle,
+                                fontSize = 12.sp,
+                                color = scheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
                 IconButton(onClick = { showSearch = true }) {
@@ -365,6 +418,35 @@ fun CalendarScreen(
                         selected = selected,
                         onEditTx = { editingTx = it; showSheet = true },
                         onEditInst = { editingInst = it; showInstSheet = true },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                CalendarViewMode.WEEK -> {
+                    WeekView(
+                        selected = selected,
+                        onSelect = { selected = it },
+                        markerProvider = markerProvider,
+                        onEditTx = { editingTx = it; showSheet = true },
+                        onEditInst = { editingInst = it; showInstSheet = true },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 16.dp)
+                    )
+                }
+                CalendarViewMode.YEAR -> {
+                    YearView(
+                        year = yearViewYear,
+                        markerProvider = markerProvider,
+                        onSelectMonth = { year, month ->
+                            AppSettings.setViewMode(CalendarViewMode.MONTH)
+                            val first = Jalali.toGregorian(JalaliDate(year, month, 1))
+                            val last = Jalali.toGregorian(
+                                JalaliDate(year, month, Jalali.monthLength(year, month))
+                            )
+                            selected = if (today in first..last) today else first
+                            scope.launch { pagerState.scrollToPage(pageFor(selected)) }
+                        },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
