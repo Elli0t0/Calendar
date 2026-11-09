@@ -45,7 +45,7 @@ import io.github.elli0t0.calendar.data.TransactionMarkerProvider
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.ui.calendar.CalendarScreen
 import io.github.elli0t0.calendar.ui.installments.InstallmentsScreen
-import io.github.elli0t0.calendar.ui.nav.PlaceholderScreen
+import io.github.elli0t0.calendar.ui.stats.StatsScreen
 import io.github.elli0t0.calendar.ui.transactions.TransactionsScreen
 import io.github.elli0t0.calendar.ui.nav.Tab
 import io.github.elli0t0.calendar.ui.theme.CalendarTheme
@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
                                 Tab.CALENDAR -> CalendarScreen(markerProvider = markerProvider)
                                 Tab.TRANSACTIONS -> TransactionsScreen()
                                 Tab.INSTALLMENTS -> InstallmentsScreen()
-                                else -> PlaceholderScreen(tab = tab)
+                                Tab.STATS -> StatsScreen()
                             }
                             PillNav(
                                 selected = tab,

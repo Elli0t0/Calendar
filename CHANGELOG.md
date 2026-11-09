@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.7]
+
+- Stats tab: month selector, income/expense/balance cards, installments
+  due this month, 6-month bar chart drawn with Canvas (no chart library)
+- Month aggregation in a pure function with a unit test
+
 ## [0.0.6]
 
 - Installments tab: JSON store + repository (same pattern as transactions),

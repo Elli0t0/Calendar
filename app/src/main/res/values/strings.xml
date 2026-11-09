@@ -33,4 +33,7 @@
     <string name="inst_progress">%1$s از %2$s پرداخت شده</string>
     <string name="inst_next">قسط بعدی</string>
     <string name="inst_all_paid">همه پرداخت شده</string>
+    <string name="stats_empty">داده‌ای برای این ماه نیست</string>
+    <string name="stats_due_title">اقساط این ماه</string>
+    <string name="stats_installment_word">قسط</string>
 </resources>
