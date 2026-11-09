@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.4]
+
+- Stage 6: calendar views, part 1 (Day and Schedule). The drawer has two
+  groups: Views (Month, Day, Schedule) and the tabs (Transactions,
+  Installments, Stats); the view mode is saved in AppSettings and the
+  Calendar screen opens in it, with the selected date shared by all modes
+  and the same header actions (menu, title, search, today badge). Day view:
+  a 7-day strip (weekday letters + numbers, first day from settings,
+  selected day filled, tiny marker dots) over a day pager (±3650 days);
+  swiping moves the selected day and the strip, tapping a strip day selects
+  it; each page shows the same day content (summary, grouped cards,
+  installment check, empty state). Schedule view: a lazy list from the
+  selected month with month headers, day headers (large number + weekday,
+  muted Gregorian) and the usual cards; only days with events appear and
+  empty months are skipped; 3-month windows load near the end and the top
+  (with scroll restoration when prepending). The selected-day section was
+  extracted into DayEvents so all three modes share the same cards.
+
 ## [0.1.3]
 
 - Stage 5: calendar settings. AppSettings (SharedPreferences + StateFlow)

@@ -30,6 +30,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import io.github.elli0t0.calendar.data.AppSettings
+import io.github.elli0t0.calendar.data.CalendarViewMode
 import io.github.elli0t0.calendar.data.CompositeMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentRepository
@@ -68,6 +70,19 @@ private fun tabIcon(tab: Tab): Int = when (tab) {
     Tab.STATS -> R.drawable.ic_bar_chart
 }
 
+@DrawableRes
+private fun viewIcon(mode: CalendarViewMode): Int = when (mode) {
+    CalendarViewMode.MONTH -> R.drawable.ic_date_range
+    CalendarViewMode.DAY -> R.drawable.ic_day
+    CalendarViewMode.SCHEDULE -> R.drawable.ic_schedule
+}
+
+private fun viewTitleRes(mode: CalendarViewMode): Int = when (mode) {
+    CalendarViewMode.MONTH -> R.string.view_month
+    CalendarViewMode.DAY -> R.string.view_day
+    CalendarViewMode.SCHEDULE -> R.string.view_schedule
+}
+
 class MainActivity : ComponentActivity() {
     // Due date from a tapped reminder notification, if any.
     private val deepLinkEpochDay = mutableStateOf<Long?>(null)
@@ -84,6 +99,7 @@ class MainActivity : ComponentActivity() {
             CalendarTheme {
                     var tab by remember { mutableStateOf(Tab.CALENDAR) }
                     var showSettings by remember { mutableStateOf(false) }
+                    val settings by AppSettings.settings.collectAsState()
                     val markerProvider = remember {
                         CompositeMarkerProvider(
                             listOf(TransactionMarkerProvider(), InstallmentMarkerProvider())
@@ -135,7 +151,58 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     color = scheme.outlineVariant
                                 )
-                                Tab.entries.forEach { item ->
+                                // Group 1: calendar views (switch the Calendar screen's mode).
+                                Text(
+                                    text = stringResource(R.string.views_title),
+                                    fontSize = 13.sp,
+                                    color = scheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(
+                                        start = 28.dp, top = 12.dp, bottom = 4.dp
+                                    )
+                                )
+                                CalendarViewMode.entries.forEach { mode ->
+                                    NavigationDrawerItem(
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(viewIcon(mode)),
+                                                contentDescription = null
+                                            )
+                                        },
+                                        label = {
+                                            Text(
+                                                text = stringResource(viewTitleRes(mode)),
+                                                fontSize = 18.sp
+                                            )
+                                        },
+                                        selected = tab == Tab.CALENDAR &&
+                                            settings.viewMode == mode,
+                                        onClick = {
+                                            AppSettings.setViewMode(mode)
+                                            tab = Tab.CALENDAR
+                                            scope.launch { drawerState.close() }
+                                        },
+                                        colors = NavigationDrawerItemDefaults.colors(
+                                            selectedContainerColor = scheme.secondaryContainer,
+                                            unselectedContainerColor = Color.Transparent,
+                                            selectedIconColor = scheme.primary,
+                                            unselectedIconColor = scheme.onSurfaceVariant,
+                                            selectedTextColor = scheme.onSurface,
+                                            unselectedTextColor = scheme.onSurfaceVariant
+                                        ),
+                                        shape = RoundedCornerShape(16.dp),
+                                        modifier = Modifier
+                                            .height(56.dp)
+                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                                    )
+                                }
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(
+                                        horizontal = 16.dp, vertical = 8.dp
+                                    ),
+                                    color = scheme.outlineVariant
+                                )
+                                // Group 2: the other tabs.
+                                Tab.entries.filter { it != Tab.CALENDAR }.forEach { item ->
                                     NavigationDrawerItem(
                                         icon = {
                                             Icon(

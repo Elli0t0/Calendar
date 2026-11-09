@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 enum class FirstDay { SATURDAY, SUNDAY, MONDAY }
 enum class MarkerStyle { VERY_MUTED, MUTED, BRIGHT, VERY_BRIGHT }
+enum class CalendarViewMode { MONTH, DAY, SCHEDULE }
 
 data class Settings(
     val firstDay: FirstDay = FirstDay.SATURDAY,
@@ -16,6 +17,7 @@ data class Settings(
     val markerStyle: MarkerStyle = MarkerStyle.MUTED,
     val reminderHour: Int = 9,
     val reminderMinute: Int = 0,
+    val viewMode: CalendarViewMode = CalendarViewMode.MONTH,
 )
 
 /** Calendar settings, persisted in SharedPreferences and exposed as a flow. */
@@ -27,6 +29,7 @@ object AppSettings {
     private const val KEY_MARKER_STYLE = "marker_style"
     private const val KEY_REMINDER_HOUR = "reminder_hour"
     private const val KEY_REMINDER_MINUTE = "reminder_minute"
+    private const val KEY_VIEW_MODE = "view_mode"
 
     private val _settings = MutableStateFlow(Settings())
     val settings: StateFlow<Settings> = _settings.asStateFlow()
@@ -52,6 +55,9 @@ object AppSettings {
             }.getOrDefault(MarkerStyle.MUTED),
             reminderHour = p.getInt(KEY_REMINDER_HOUR, 9),
             reminderMinute = p.getInt(KEY_REMINDER_MINUTE, 0),
+            viewMode = runCatching {
+                CalendarViewMode.valueOf(p.getString(KEY_VIEW_MODE, null) ?: "MONTH")
+            }.getOrDefault(CalendarViewMode.MONTH),
         )
     }
 
@@ -65,6 +71,7 @@ object AppSettings {
             putString(KEY_MARKER_STYLE, next.markerStyle.name)
             putInt(KEY_REMINDER_HOUR, next.reminderHour)
             putInt(KEY_REMINDER_MINUTE, next.reminderMinute)
+            putString(KEY_VIEW_MODE, next.viewMode.name)
         }?.apply()
     }
 
@@ -76,4 +83,5 @@ object AppSettings {
     fun setMarkerStyle(style: MarkerStyle) = update { it.copy(markerStyle = style) }
     fun setReminderTime(hour: Int, minute: Int) =
         update { it.copy(reminderHour = hour, reminderMinute = minute) }
+    fun setViewMode(mode: CalendarViewMode) = update { it.copy(viewMode = mode) }
 }

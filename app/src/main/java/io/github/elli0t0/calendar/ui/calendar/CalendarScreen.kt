@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -39,34 +38,27 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.AppSettings
+import io.github.elli0t0.calendar.data.CalendarViewMode
 import io.github.elli0t0.calendar.data.Installment
 import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
-import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
-import io.github.elli0t0.calendar.data.TxType
-import io.github.elli0t0.calendar.data.dueDate
-import io.github.elli0t0.calendar.data.occursOn
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
-import io.github.elli0t0.calendar.ui.common.formatAmount
+import io.github.elli0t0.calendar.ui.common.fullJalaliDate
 import io.github.elli0t0.calendar.ui.installments.InstallmentSheet
 import io.github.elli0t0.calendar.ui.search.SearchScreen
 import io.github.elli0t0.calendar.ui.transactions.TxSheet
@@ -132,6 +124,41 @@ fun CalendarScreen(
     val scope = rememberCoroutineScope()
     val displayed = addJalaliMonths(baseJalali.year, baseJalali.month, pagerState.currentPage - 600)
 
+    // Header title and subtitle for the current mode.
+    val selectedJalali = Jalali.toJalali(selected)
+    val (headerTitle, headerSubtitle, headerTitleSize) = when (settings.viewMode) {
+        CalendarViewMode.MONTH -> Triple(
+            PersianNames.jalaliMonthName(displayed.second),
+            if (settings.showGregorianInHeader) {
+                "${displayed.first.toPersianDigits()} · " +
+                    gregorianOverlap(displayed.first, displayed.second)
+            } else {
+                null
+            },
+            24.sp
+        )
+        CalendarViewMode.DAY -> Triple(
+            fullJalaliDate(selected),
+            stringResource(
+                R.string.date_gregorian,
+                selected.dayOfMonth.toPersianDigits(),
+                PersianNames.gregorianMonthName(selected.monthValue),
+                selected.year.toPersianDigits()
+            ),
+            20.sp
+        )
+        CalendarViewMode.SCHEDULE -> Triple(
+            PersianNames.jalaliMonthName(selectedJalali.month),
+            if (settings.showGregorianInHeader) {
+                "${selectedJalali.year.toPersianDigits()} · " +
+                    gregorianOverlap(selectedJalali.year, selectedJalali.month)
+            } else {
+                null
+            },
+            24.sp
+        )
+    }
+
     if (showSearch) {
         SearchScreen(
             onBack = { showSearch = false },
@@ -143,77 +170,83 @@ fun CalendarScreen(
         )
     } else {
     Box(modifier = modifier.fillMaxSize().background(scheme.background)) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 96.dp)
-        ) {
-        // Header: menu, month + year + Gregorian line, today badge.
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onMenuClick) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_menu),
-                    contentDescription = stringResource(R.string.menu)
-                )
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header (shared by all modes): menu, title, search, today badge.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = PersianNames.jalaliMonthName(displayed.second),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = scheme.onSurface,
-                    textAlign = TextAlign.Center
-                )
-                if (settings.showGregorianInHeader) {
-                    Text(
-                        text = "${displayed.first.toPersianDigits()} · ${gregorianOverlap(displayed.first, displayed.second)}",
-                        fontSize = 12.sp,
-                        color = scheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
+                IconButton(onClick = onMenuClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_menu),
+                        contentDescription = stringResource(R.string.menu)
                     )
                 }
-            }
-            IconButton(onClick = { showSearch = true }) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_search),
-                    contentDescription = stringResource(R.string.search_hint),
-                    tint = scheme.onSurface
-                )
-            }
-            Box(
-                modifier = Modifier.size(48.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(2.dp, scheme.onSurface, RoundedCornerShape(8.dp))
-                        .clickable {
-                            selected = today
-                            scope.launch { pagerState.animateScrollToPage(600) }
-                        },
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = Jalali.toJalali(today).day.toPersianDigits(),
-                        fontSize = 15.sp,
+                        text = headerTitle,
+                        fontSize = headerTitleSize,
                         fontWeight = FontWeight.Bold,
-                        color = scheme.onSurface
+                        color = scheme.onSurface,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (headerSubtitle != null) {
+                        Text(
+                            text = headerSubtitle,
+                            fontSize = 12.sp,
+                            color = scheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                IconButton(onClick = { showSearch = true }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_search),
+                        contentDescription = stringResource(R.string.search_hint),
+                        tint = scheme.onSurface
                     )
                 }
+                Box(
+                    modifier = Modifier.size(48.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(2.dp, scheme.onSurface, RoundedCornerShape(8.dp))
+                            .clickable {
+                                selected = today
+                                scope.launch { pagerState.animateScrollToPage(600) }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = Jalali.toJalali(today).day.toPersianDigits(),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = scheme.onSurface
+                        )
+                    }
+                }
             }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+            when (settings.viewMode) {
+                CalendarViewMode.MONTH -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 20.dp)
+                            .padding(bottom = 96.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp))
 
         // Weekday row, starting on the chosen first day. Friday letter in red.
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -269,12 +302,6 @@ fun CalendarScreen(
             label = "selectedDay"
         ) { date ->
             val jalali = Jalali.toJalali(date)
-            val dayTxs = transactions.filter { occursOn(it, date) }
-            val dayInstallments = installments.flatMap { inst ->
-                (0 until inst.count)
-                    .filter { k -> dueDate(inst, k) == date }
-                    .map { k -> inst to k }
-            }
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -308,129 +335,41 @@ fun CalendarScreen(
                     fontSize = 14.sp,
                     color = scheme.onSurfaceVariant
                 )
-                // One muted line with the day's income/expense totals
-                // (only the non-zero parts).
-                val dayIncome = dayTxs
-                    .filter { it.type == TxType.INCOME }.sumOf { it.amount }
-                val dayExpense = dayTxs
-                    .filter { it.type == TxType.EXPENSE }.sumOf { it.amount }
-                val summaryText = when {
-                    dayIncome > 0 && dayExpense > 0 -> "${
-                        stringResource(R.string.tx_income)
-                    } ${stringResource(R.string.amount_with_currency, formatAmount(dayIncome))} · ${
-                        stringResource(R.string.tx_expense)
-                    } ${stringResource(R.string.amount_with_currency, formatAmount(dayExpense))}"
-                    dayIncome > 0 -> "${stringResource(R.string.tx_income)} ${
-                        stringResource(R.string.amount_with_currency, formatAmount(dayIncome))
-                    }"
-                    dayExpense > 0 -> "${stringResource(R.string.tx_expense)} ${
-                        stringResource(R.string.amount_with_currency, formatAmount(dayExpense))
-                    }"
-                    else -> null
+                DayEvents(
+                    date = date,
+                    transactions = transactions,
+                    installments = installments,
+                    markerStyle = settings.markerStyle,
+                    onEditTx = { editingTx = it; showSheet = true },
+                    onEditInst = { editingInst = it; showInstSheet = true }
+                )
+            }
+        }
+                    }
                 }
-                if (summaryText != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = summaryText,
-                        fontSize = 13.sp,
-                        color = scheme.onSurfaceVariant
+                CalendarViewMode.DAY -> {
+                    DayView(
+                        selected = selected,
+                        onSelect = { selected = it },
+                        markerProvider = markerProvider,
+                        onEditTx = { editingTx = it; showSheet = true },
+                        onEditInst = { editingInst = it; showInstSheet = true },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 16.dp, bottom = 96.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                if (dayInstallments.isEmpty() && dayTxs.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.no_events),
-                        fontSize = 15.sp,
-                        color = scheme.onSurfaceVariant
+                CalendarViewMode.SCHEDULE -> {
+                    ScheduleView(
+                        selected = selected,
+                        onEditTx = { editingTx = it; showSheet = true },
+                        onEditInst = { editingInst = it; showInstSheet = true },
+                        modifier = Modifier.fillMaxSize()
                     )
-                } else {
-                    // Installments first, then expenses, then incomes.
-                    dayInstallments.forEach { (inst, k) ->
-                        val paid = k in inst.paid
-                        DayEventRow(
-                            barColor = markerColor(
-                                MarkerType.INSTALLMENT, -1, settings.markerStyle
-                            ),
-                            title = inst.title,
-                            note = null,
-                            amountText = stringResource(
-                                R.string.amount_with_currency,
-                                formatAmount(inst.amountPerMonth)
-                            ),
-                            amountColor = Color(0xFFFB8C00),
-                            alpha = if (paid) 0.5f else 1f,
-                            strikethroughTitle = paid,
-                            onClick = { editingInst = inst; showInstSheet = true },
-                            trailing = {
-                                val paidLabel = stringResource(R.string.inst_paid)
-                                val markPaidLabel = stringResource(R.string.inst_mark_paid)
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (paid) scheme.primary else Color.Transparent
-                                        )
-                                        .border(
-                                            2.dp,
-                                            if (paid) scheme.primary else scheme.outline,
-                                            CircleShape
-                                        )
-                                        .clickable {
-                                            InstallmentRepository.togglePaid(inst.id, k)
-                                        }
-                                        .semantics {
-                                            contentDescription =
-                                                if (paid) paidLabel else markPaidLabel
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (paid) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.ic_check),
-                                            contentDescription = null,
-                                            tint = scheme.onPrimary,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        )
-                    }
-                    dayTxs.filter { it.type == TxType.EXPENSE }.forEach { tx ->
-                        DayEventRow(
-                            barColor = markerColor(
-                                MarkerType.EXPENSE, tx.colorIndex, settings.markerStyle
-                            ),
-                            title = tx.title,
-                            note = tx.note.ifBlank { null },
-                            amountText = stringResource(
-                                R.string.amount_with_currency,
-                                formatAmount(tx.amount)
-                            ),
-                            amountColor = Color(0xFFE53935),
-                            onClick = { editingTx = tx; showSheet = true }
-                        )
-                    }
-                    dayTxs.filter { it.type == TxType.INCOME }.forEach { tx ->
-                        DayEventRow(
-                            barColor = markerColor(
-                                MarkerType.INCOME, tx.colorIndex, settings.markerStyle
-                            ),
-                            title = tx.title,
-                            note = tx.note.ifBlank { null },
-                            amountText = stringResource(
-                                R.string.amount_with_currency,
-                                formatAmount(tx.amount)
-                            ),
-                            amountColor = Color(0xFF43A047),
-                            onClick = { editingTx = tx; showSheet = true }
-                        )
-                    }
                 }
             }
         }
-    }
         // Add pill: anchored to the bottom of the screen, over the scrolling content.
         Box(
             modifier = Modifier
@@ -479,63 +418,3 @@ fun CalendarScreen(
     }
 }
 
-/** One event card in the selected-day section: color bar, title, one-line
- * note, amount. An optional round button (e.g. the paid toggle) goes last. */
-@Composable
-private fun DayEventRow(
-    barColor: Color,
-    title: String,
-    note: String?,
-    amountText: String,
-    amountColor: Color,
-    alpha: Float = 1f,
-    strikethroughTitle: Boolean = false,
-    onClick: (() -> Unit)? = null,
-    trailing: @Composable (() -> Unit)? = null,
-) {
-    val scheme = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(alpha)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .width(4.dp)
-                .height(40.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(barColor)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                fontSize = 15.sp,
-                color = scheme.onSurface,
-                textDecoration = if (strikethroughTitle) TextDecoration.LineThrough else null
-            )
-            if (!note.isNullOrBlank()) {
-                Text(
-                    text = note,
-                    fontSize = 13.sp,
-                    color = scheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-        Text(
-            text = amountText,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = amountColor
-        )
-        if (trailing != null) {
-            Spacer(modifier = Modifier.width(12.dp))
-            trailing()
-        }
-    }
-}

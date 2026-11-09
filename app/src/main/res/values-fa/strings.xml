@@ -81,6 +81,10 @@
     <string name="marker_very_bright">خیلی پررنگ</string>
     <string name="settings_reminders">یادآورها</string>
     <string name="settings_reminder_time">زمان پیش‌فرض یادآوری</string>
+    <string name="views_title">نماها</string>
+    <string name="view_month">ماه</string>
+    <string name="view_day">روز</string>
+    <string name="view_schedule">برنامه</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>
