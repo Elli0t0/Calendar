@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -144,14 +147,24 @@ fun TxSheet(
         if (initial == null) titleFocus.requestFocus()
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        windowInsets = WindowInsets(0)
+    ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp)
+                .fillMaxWidth()
+                .navigationBarsPadding()
                 .imePadding()
         ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+            ) {
             Text(
                 text = stringResource(if (initial == null) R.string.tx_new else R.string.tx_edit),
                 fontSize = 20.sp,
@@ -350,7 +363,14 @@ fun TxSheet(
                 singleLine = false,
                 maxLines = 4
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            }
+            // Pinned to the bottom, always visible above the keyboard.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 16.dp, bottom = 24.dp)
+            ) {
             SheetSaveButton(
                 onClick = {
                     if (initial == null) {
@@ -431,6 +451,7 @@ fun TxSheet(
                         }
                     )
                 }
+            }
             }
         }
     }

@@ -6,9 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -95,13 +100,24 @@ fun InstallmentSheet(initial: Installment?, onDismiss: () -> Unit) {
     val count = countDigits.toIntOrNull() ?: 0
     val canSave = title.isNotBlank() && amount > 0 && day in 1..31 && count > 0
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        windowInsets = WindowInsets(0)
+    ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 24.dp)
+                .fillMaxWidth()
+                .navigationBarsPadding()
                 .imePadding()
         ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+            ) {
             Text(
                 text = stringResource(if (initial == null) R.string.inst_new else R.string.inst_edit),
                 fontSize = 20.sp,
@@ -207,7 +223,14 @@ fun InstallmentSheet(initial: Installment?, onDismiss: () -> Unit) {
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            }
+            // Pinned to the bottom, always visible above the keyboard.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 16.dp, bottom = 24.dp)
+            ) {
             SheetSaveButton(
                 onClick = {
                     if (initial == null) {
@@ -244,6 +267,7 @@ fun InstallmentSheet(initial: Installment?, onDismiss: () -> Unit) {
                 ) {
                     Text(stringResource(R.string.tx_delete), color = DeleteRed)
                 }
+            }
             }
         }
     }

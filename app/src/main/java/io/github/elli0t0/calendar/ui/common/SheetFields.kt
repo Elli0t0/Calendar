@@ -2,6 +2,8 @@ package io.github.elli0t0.calendar.ui.common
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,14 +14,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * The shared filled text field for sheets and search: surfaceContainerHigh,
  * 16dp corners, no border or indicator line, at least 56dp tall, muted
  * label; focus only changes the cursor and label color to the accent.
+ * When a field gets focus it scrolls itself into view above the keyboard.
  */
 @Composable
 fun SheetTextField(
@@ -33,6 +41,8 @@ fun SheetTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val scope = rememberCoroutineScope()
     TextField(
         value = value,
         onValueChange = onValueChange,
@@ -60,6 +70,17 @@ fun SheetTextField(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
+            .bringIntoViewRequester(bringIntoViewRequester)
+            .onFocusEvent { focusState ->
+                if (focusState.isFocused) {
+                    scope.launch {
+                        // Let the keyboard finish opening so the scroll
+                        // target is measured against the visible area.
+                        delay(250)
+                        bringIntoViewRequester.bringIntoView()
+                    }
+                }
+            }
     )
 }
 

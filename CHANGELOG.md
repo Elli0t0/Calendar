@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.9]
+
+- Task 3: keyboard covering the bottom sheets. MainActivity has
+  android:windowSoftInputMode="adjustResize" (enableEdgeToEdge was
+  already in place from 0.1.7). Both sheets now open fully
+  (skipPartiallyExpanded), take WindowInsets(0) and handle insets
+  themselves: an outer Column with navigationBarsPadding + imePadding,
+  a scrolling Column for the fields, and the Save button (plus
+  Copy/Delete) in a pinned bottom Column that always stays above the
+  keyboard. A focused field scrolls itself into view
+  (BringIntoViewRequester, after the keyboard settles). The search
+  screen also gets imePadding so its results stay above the keyboard.
+  The root Box keeps its status/navigation bar padding: no screen adds
+  its own, so there is no double padding. No BOM bump was needed; the
+  fix uses APIs already in the current BOM.
+
 ## [0.1.8]
 
 - Task 2: in-app language setting (Persian / English), no AppCompat.
