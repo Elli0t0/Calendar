@@ -81,6 +81,7 @@
     <string name="marker_very_bright">Very bright</string>
     <string name="settings_reminders">Reminders</string>
     <string name="settings_reminder_time">Default reminder time</string>
+    <string name="settings_alerts">Alerts</string>
     <string name="views_title">Views</string>
     <string name="view_month">Month</string>
     <string name="view_day">Day</string>
@@ -95,10 +96,12 @@
     <string name="add_transaction">Add transaction +</string>
     <string name="add_installment">Add installment +</string>
     <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="settings_language">Language</string>
+    <string name="settings_calendar_style">Calendar style</string>
     <string name="amount_with_currency">%1$s Toman</string>
     <string name="date_full">%1$s, %2$s %3$s %4$s</string>
     <string name="date_gregorian">%2$s %1$s, %3$s</string>

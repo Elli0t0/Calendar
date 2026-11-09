@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.2]
+
+- Task 4c, Settings rebuilt like the reference. Top bar: back arrow
+  with the title start-aligned (20sp bold, mirrors in RTL). The
+  per-section Cards are gone: each section is a small 13sp label in
+  onSurfaceVariant with 16dp start padding, then one 28dp rounded
+  container holding the rows, separated by 1dp dividers inset 16dp.
+  Value rows show the title (16sp) with the current value as a second
+  line in primary (theme, language, first day, reminder time), each
+  opening its picker dialog; the theme is now a value row + dialog
+  instead of three radio rows. Switch rows have the title, an optional
+  muted description, and the Switch at the end. Sections: Appearance,
+  Calendar, Alerts, Calendar style. The Calendar style row opens a new
+  page (CalendarStyleScreen, 4d fills it in); the Event colors setting
+  moved there so it stays reachable. All sizes in Dimens.kt.
+
 ## [0.2.1]
 
 - Task 4b, drawer restyle to match the reference. The sheet is now

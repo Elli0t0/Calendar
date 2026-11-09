@@ -33,6 +33,11 @@ object Dimens {
     val DrawerItemLabel = 16.sp
     val DrawerItemCorner = 26.dp
     val DrawerItemPadding = 12.dp
+    val SettingsLabel = 13.sp
+    val SettingsContainerCorner = 28.dp
+    val SettingsRowTitle = 16.sp
+    val SettingsRowValue = 13.sp
+    val SettingsRowDescription = 13.sp
     val CardCorner = 24.dp
     val RowCardCorner = 20.dp
     val SheetFieldCorner = 16.dp

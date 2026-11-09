@@ -3,7 +3,6 @@ package io.github.elli0t0.calendar.ui.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -17,8 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,31 +37,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
 import io.github.elli0t0.calendar.data.AppLanguage
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.FirstDay
-import io.github.elli0t0.calendar.data.MarkerStyle
-import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.ThemeMode
 import io.github.elli0t0.calendar.notify.ReminderScheduler
-import io.github.elli0t0.calendar.ui.calendar.markerColor
 import io.github.elli0t0.calendar.ui.common.toPersianDigits
+import io.github.elli0t0.calendar.ui.theme.Dimens
 
 private fun firstDayLabelRes(firstDay: FirstDay): Int = when (firstDay) {
     FirstDay.SATURDAY -> R.string.first_day_saturday
     FirstDay.SUNDAY -> R.string.first_day_sunday
     FirstDay.MONDAY -> R.string.first_day_monday
-}
-
-private fun markerStyleLabelRes(style: MarkerStyle): Int = when (style) {
-    MarkerStyle.VERY_MUTED -> R.string.marker_very_muted
-    MarkerStyle.MUTED -> R.string.marker_muted
-    MarkerStyle.BRIGHT -> R.string.marker_bright
-    MarkerStyle.VERY_BRIGHT -> R.string.marker_very_bright
 }
 
 @Composable
@@ -77,109 +63,107 @@ fun SettingsScreen(
     var showFirstDayDialog by remember { mutableStateOf(false) }
     var showTimeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
-    Box(
+    var showThemeDialog by remember { mutableStateOf(false) }
+    var showStyle by remember { mutableStateOf(false) }
+    if (showStyle) {
+        CalendarStyleScreen(onBack = { showStyle = false })
+        return
+    }
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(scheme.background)
             .padding(bottom = 20.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_left),
+                    contentDescription = stringResource(R.string.back),
+                    tint = scheme.onSurface
+                )
+            }
+            Text(
+                text = stringResource(R.string.settings_title),
+                fontSize = Dimens.HeaderTitle,
+                fontWeight = FontWeight.Bold,
+                color = scheme.onSurface
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_left),
-                        contentDescription = stringResource(R.string.back),
-                        tint = scheme.onSurface
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.settings_title),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = scheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
+            SettingsSection(label = stringResource(R.string.settings_appearance)) {
+                ValueRow(
+                    title = stringResource(R.string.settings_theme),
+                    value = stringResource(themeModeLabelRes(settings.themeMode)),
+                    onClick = { showThemeDialog = true }
                 )
-                Spacer(modifier = Modifier.width(48.dp))
+                SectionDivider()
+                ValueRow(
+                    title = stringResource(R.string.settings_language),
+                    value = languageName(settings.language),
+                    onClick = { showLanguageDialog = true }
+                )
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                SettingsCard(title = stringResource(R.string.settings_appearance)) {
-                    ThemeMode.entries.forEachIndexed { index, mode ->
-                        if (index > 0) {
-                            HorizontalDivider(color = scheme.outlineVariant)
-                        }
-                        ThemeModeRow(
-                            mode = mode,
-                            selected = settings.themeMode == mode,
-                            onClick = { AppSettings.setThemeMode(mode) }
+            SettingsSection(label = stringResource(R.string.settings_calendar)) {
+                ValueRow(
+                    title = stringResource(R.string.settings_first_day),
+                    value = stringResource(firstDayLabelRes(settings.firstDay)),
+                    onClick = { showFirstDayDialog = true }
+                )
+                SectionDivider()
+                SwitchRow(
+                    title = stringResource(R.string.settings_show_gregorian_tiles),
+                    checked = settings.showGregorianInTiles,
+                    onCheckedChange = { AppSettings.setShowGregorianInTiles(it) }
+                )
+                SectionDivider()
+                SwitchRow(
+                    title = stringResource(R.string.settings_show_gregorian_header),
+                    checked = settings.showGregorianInHeader,
+                    onCheckedChange = { AppSettings.setShowGregorianInHeader(it) }
+                )
+            }
+            SettingsSection(label = stringResource(R.string.settings_alerts)) {
+                ValueRow(
+                    title = stringResource(R.string.settings_reminder_time),
+                    value = toPersianDigits(
+                        "%02d:%02d".format(
+                            settings.reminderHour, settings.reminderMinute
                         )
-                    }
-                    HorizontalDivider(color = scheme.outlineVariant)
-                    SettingsRow(
-                        title = stringResource(R.string.settings_language),
-                        value = languageName(settings.language),
-                        onClick = { showLanguageDialog = true }
-                    )
-                }
-                SettingsCard(title = stringResource(R.string.settings_calendar)) {
-                    SettingsRow(
-                        title = stringResource(R.string.settings_first_day),
-                        value = stringResource(firstDayLabelRes(settings.firstDay)),
-                        onClick = { showFirstDayDialog = true }
-                    )
-                    HorizontalDivider(color = scheme.outlineVariant)
-                    SettingsRowSwitch(
-                        title = stringResource(R.string.settings_show_gregorian_tiles),
-                        checked = settings.showGregorianInTiles,
-                        onCheckedChange = { AppSettings.setShowGregorianInTiles(it) }
-                    )
-                    HorizontalDivider(color = scheme.outlineVariant)
-                    SettingsRowSwitch(
-                        title = stringResource(R.string.settings_show_gregorian_header),
-                        checked = settings.showGregorianInHeader,
-                        onCheckedChange = { AppSettings.setShowGregorianInHeader(it) }
-                    )
-                }
-                SettingsCard(title = stringResource(R.string.settings_event_colors)) {
-                    MarkerStyle.entries.forEachIndexed { index, style ->
-                        if (index > 0) {
-                            HorizontalDivider(color = scheme.outlineVariant)
-                        }
-                        MarkerStyleRow(
-                            style = style,
-                            selected = settings.markerStyle == style,
-                            onClick = { AppSettings.setMarkerStyle(style) }
-                        )
-                    }
-                }
-                SettingsCard(title = stringResource(R.string.settings_reminders)) {
-                    SettingsRow(
-                        title = stringResource(R.string.settings_reminder_time),
-                        value = toPersianDigits(
-                            "%02d:%02d".format(
-                                settings.reminderHour, settings.reminderMinute
-                            )
-                        ),
-                        onClick = { showTimeDialog = true }
-                    )
-                }
+                    ),
+                    onClick = { showTimeDialog = true }
+                )
+            }
+            SettingsSection(label = stringResource(R.string.settings_calendar_style)) {
+                NavRow(
+                    title = stringResource(R.string.settings_calendar_style),
+                    onClick = { showStyle = true }
+                )
             }
         }
+    }
+    if (showThemeDialog) {
+        ThemeDialog(
+            current = settings.themeMode,
+            onSelect = { mode ->
+                showThemeDialog = false
+                AppSettings.setThemeMode(mode)
+            },
+            onDismiss = { showThemeDialog = false }
+        )
     }
     if (showLanguageDialog) {
         LanguageDialog(
@@ -209,59 +193,61 @@ fun SettingsScreen(
     }
 }
 
+/** A section: small label, then one rounded container holding the rows. */
 @Composable
-private fun SettingsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
+fun SettingsSection(
+    label: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     val scheme = MaterialTheme.colorScheme
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = title,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = scheme.onSurface,
-            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+            text = label,
+            fontSize = Dimens.SettingsLabel,
+            color = scheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
         )
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = scheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                content = content
-            )
-        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(Dimens.SettingsContainerCorner))
+                .background(scheme.surface),
+            content = content
+        )
     }
 }
 
+/** A 1dp divider between rows, inset 16dp from the container edges. */
 @Composable
-private fun SettingsRow(title: String, value: String, onClick: () -> Unit) {
+fun SectionDivider() {
     val scheme = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
+    HorizontalDivider(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        thickness = 1.dp,
+        color = scheme.outlineVariant
+    )
+}
+
+/** A row with a value: title, then the current value in primary below it. */
+@Composable
+fun ValueRow(title: String, value: String, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Column(
+        Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            color = scheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = value,
-            fontSize = 14.sp,
-            color = scheme.onSurfaceVariant
-        )
+        Text(title, fontSize = Dimens.SettingsRowTitle, color = scheme.onSurface)
+        Text(value, fontSize = Dimens.SettingsRowValue, color = scheme.primary)
     }
 }
 
+/** A row with a Switch: title + optional muted description, Switch at the end. */
 @Composable
-private fun SettingsRowSwitch(
+fun SwitchRow(
     title: String,
+    description: String? = null,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
@@ -269,52 +255,46 @@ private fun SettingsRowSwitch(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            color = scheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontSize = Dimens.SettingsRowTitle, color = scheme.onSurface)
+            if (description != null) {
+                Text(
+                    description,
+                    fontSize = Dimens.SettingsRowDescription,
+                    color = scheme.onSurfaceVariant
+                )
+            }
+        }
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
+/** A row that opens a page: title + a chevron at the end. */
 @Composable
-private fun MarkerStyleRow(
-    style: MarkerStyle,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
+fun NavRow(title: String, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        RadioButton(selected = selected, onClick = onClick)
-        Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = stringResource(markerStyleLabelRes(style)),
-            fontSize = 16.sp,
+            text = title,
+            fontSize = Dimens.SettingsRowTitle,
             color = scheme.onSurface,
             modifier = Modifier.weight(1f)
         )
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            MarkerType.entries.forEach { type ->
-                Box(
-                    modifier = Modifier
-                        .width(24.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(markerColor(type, -1, style))
-                )
-            }
-        }
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_right),
+            contentDescription = null,
+            tint = scheme.onSurfaceVariant
+        )
     }
 }
 
@@ -329,6 +309,50 @@ private fun themeModeLabelRes(mode: ThemeMode): Int = when (mode) {
 private fun languageName(lang: AppLanguage): String = when (lang) {
     AppLanguage.FA -> "فارسی"
     AppLanguage.EN -> "English"
+}
+
+/** Theme picker: each option is a radio row. */
+@Composable
+private fun ThemeDialog(
+    current: ThemeMode,
+    onSelect: (ThemeMode) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_theme)) },
+        text = {
+            Column {
+                ThemeMode.entries.forEach { option ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(option) }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = current == option,
+                            onClick = { onSelect(option) }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(themeModeLabelRes(option)),
+                            fontSize = Dimens.SettingsRowTitle,
+                            color = scheme.onSurface
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.tx_dismiss))
+            }
+        }
+    )
 }
 
 /** Language picker: each option is always shown in its own language. */
@@ -359,7 +383,7 @@ private fun LanguageDialog(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = languageName(option),
-                            fontSize = 16.sp,
+                            fontSize = Dimens.SettingsRowTitle,
                             color = scheme.onSurface
                         )
                     }
@@ -373,32 +397,6 @@ private fun LanguageDialog(
             }
         }
     )
-}
-
-/** One theme row: RadioButton + label, same row style as MarkerStyleRow. */
-@Composable
-private fun ThemeModeRow(
-    mode: ThemeMode,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    val scheme = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(selected = selected, onClick = onClick)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = stringResource(themeModeLabelRes(mode)),
-            fontSize = 16.sp,
-            color = scheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-    }
 }
 
 @Composable
@@ -430,7 +428,7 @@ private fun FirstDayDialog(current: FirstDay, onDismiss: () -> Unit) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = stringResource(firstDayLabelRes(option)),
-                            fontSize = 16.sp,
+                            fontSize = Dimens.SettingsRowTitle,
                             color = scheme.onSurface
                         )
                     }
