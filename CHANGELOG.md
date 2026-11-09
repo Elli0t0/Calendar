@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.7]
+
+- Task 1: theme setting (System / Light / Dark). Settings has a new
+  "Appearance" card above "Calendar" with three radio rows; the choice
+  is persisted (ThemeMode SYSTEM/LIGHT/DARK, default SYSTEM) and the
+  app theme follows it, including the status and navigation bar icon
+  colors (enableEdgeToEdge + a SideEffect that re-applies the bar
+  appearance when the theme changes). Light-mode audit: every screen
+  already uses scheme colors for text, icons, surfaces, sheets,
+  dialogs and the date picker, and the semantic colors (income green,
+  expense red, installment orange, Friday red, event palette) read on
+  both backgrounds, so no color needed changing.
+
 ## [0.1.6]
 
 - Visual bug pass. Every icon now has an explicit tint (never

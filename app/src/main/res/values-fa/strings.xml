@@ -94,6 +94,10 @@
     <string name="date_day_short">%1$s %2$s %3$s</string>
     <string name="add_transaction">افزودن تراکنش +</string>
     <string name="add_installment">افزودن قسط +</string>
+    <string name="settings_appearance">ظاهر</string>
+    <string name="theme_system">سیستم</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_dark">تیره</string>
     <string name="amount_with_currency">%1$s تومان</string>
     <string name="date_full">%1$s %2$s %3$s %4$s</string>
     <string name="date_gregorian">%1$s %2$s %3$s</string>

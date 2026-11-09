@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 enum class FirstDay { SATURDAY, SUNDAY, MONDAY }
 enum class MarkerStyle { VERY_MUTED, MUTED, BRIGHT, VERY_BRIGHT }
 enum class CalendarViewMode { YEAR, MONTH, WEEK, DAY, SCHEDULE }
+enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 data class Settings(
     val firstDay: FirstDay = FirstDay.SATURDAY,
@@ -18,6 +19,7 @@ data class Settings(
     val reminderHour: Int = 9,
     val reminderMinute: Int = 0,
     val viewMode: CalendarViewMode = CalendarViewMode.MONTH,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 )
 
 /** Calendar settings, persisted in SharedPreferences and exposed as a flow. */
@@ -30,6 +32,7 @@ object AppSettings {
     private const val KEY_REMINDER_HOUR = "reminder_hour"
     private const val KEY_REMINDER_MINUTE = "reminder_minute"
     private const val KEY_VIEW_MODE = "view_mode"
+    private const val KEY_THEME_MODE = "theme_mode"
 
     private val _settings = MutableStateFlow(Settings())
     val settings: StateFlow<Settings> = _settings.asStateFlow()
@@ -58,6 +61,9 @@ object AppSettings {
             viewMode = runCatching {
                 CalendarViewMode.valueOf(p.getString(KEY_VIEW_MODE, null) ?: "MONTH")
             }.getOrDefault(CalendarViewMode.MONTH),
+            themeMode = runCatching {
+                ThemeMode.valueOf(p.getString(KEY_THEME_MODE, null) ?: "SYSTEM")
+            }.getOrDefault(ThemeMode.SYSTEM),
         )
     }
 
@@ -72,6 +78,7 @@ object AppSettings {
             putInt(KEY_REMINDER_HOUR, next.reminderHour)
             putInt(KEY_REMINDER_MINUTE, next.reminderMinute)
             putString(KEY_VIEW_MODE, next.viewMode.name)
+            putString(KEY_THEME_MODE, next.themeMode.name)
         }?.apply()
     }
 
@@ -84,4 +91,5 @@ object AppSettings {
     fun setReminderTime(hour: Int, minute: Int) =
         update { it.copy(reminderHour = hour, reminderMinute = minute) }
     fun setViewMode(mode: CalendarViewMode) = update { it.copy(viewMode = mode) }
+    fun setThemeMode(mode: ThemeMode) = update { it.copy(themeMode = mode) }
 }

@@ -48,6 +48,7 @@ import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.FirstDay
 import io.github.elli0t0.calendar.data.MarkerStyle
 import io.github.elli0t0.calendar.data.MarkerType
+import io.github.elli0t0.calendar.data.ThemeMode
 import io.github.elli0t0.calendar.notify.ReminderScheduler
 import io.github.elli0t0.calendar.ui.calendar.markerColor
 import io.github.elli0t0.calendar.ui.common.toPersianDigits
@@ -112,6 +113,18 @@ fun SettingsScreen(onBack: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                SettingsCard(title = stringResource(R.string.settings_appearance)) {
+                    ThemeMode.entries.forEachIndexed { index, mode ->
+                        if (index > 0) {
+                            HorizontalDivider(color = scheme.outlineVariant)
+                        }
+                        ThemeModeRow(
+                            mode = mode,
+                            selected = settings.themeMode == mode,
+                            onClick = { AppSettings.setThemeMode(mode) }
+                        )
+                    }
+                }
                 SettingsCard(title = stringResource(R.string.settings_calendar)) {
                     SettingsRow(
                         title = stringResource(R.string.settings_first_day),
@@ -278,6 +291,39 @@ private fun MarkerStyleRow(
                 )
             }
         }
+    }
+}
+
+/** String resource for a theme mode. */
+private fun themeModeLabelRes(mode: ThemeMode): Int = when (mode) {
+    ThemeMode.SYSTEM -> R.string.theme_system
+    ThemeMode.LIGHT -> R.string.theme_light
+    ThemeMode.DARK -> R.string.theme_dark
+}
+
+/** One theme row: RadioButton + label, same row style as MarkerStyleRow. */
+@Composable
+private fun ThemeModeRow(
+    mode: ThemeMode,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = stringResource(themeModeLabelRes(mode)),
+            fontSize = 16.sp,
+            color = scheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 

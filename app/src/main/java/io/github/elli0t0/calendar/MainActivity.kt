@@ -1,12 +1,15 @@
 package io.github.elli0t0.calendar
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import java.time.LocalDate
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +34,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,13 +45,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import kotlinx.coroutines.launch
 import io.github.elli0t0.calendar.data.AppSettings
 import io.github.elli0t0.calendar.data.CalendarViewMode
+import io.github.elli0t0.calendar.data.ThemeMode
 import io.github.elli0t0.calendar.data.CompositeMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentMarkerProvider
 import io.github.elli0t0.calendar.data.InstallmentRepository
@@ -100,11 +107,27 @@ class MainActivity : ComponentActivity() {
         TxRepository.init(applicationContext)
         InstallmentRepository.init(applicationContext)
         ReminderScheduler.reschedule(applicationContext)
+        enableEdgeToEdge()
         setContent {
-            CalendarTheme {
+            val settings by AppSettings.settings.collectAsState()
+            val dark = when (settings.themeMode) {
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            CalendarTheme(darkTheme = dark) {
+                    // The status and navigation bar icons follow the chosen
+                    // theme, not the system theme.
+                    val view = LocalView.current
+                    SideEffect {
+                        val w = (view.context as Activity).window
+                        WindowCompat.getInsetsController(w, view).apply {
+                            isAppearanceLightStatusBars = !dark
+                            isAppearanceLightNavigationBars = !dark
+                        }
+                    }
                     var tab by remember { mutableStateOf(Tab.CALENDAR) }
                     var showSettings by remember { mutableStateOf(false) }
-                    val settings by AppSettings.settings.collectAsState()
                     val markerProvider = remember {
                         CompositeMarkerProvider(
                             listOf(TransactionMarkerProvider(), InstallmentMarkerProvider())
