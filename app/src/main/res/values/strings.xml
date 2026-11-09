@@ -23,4 +23,14 @@
     <string name="tx_confirm">تأیید</string>
     <string name="tx_pick_date">انتخاب تاریخ</string>
     <string name="tx_empty">تراکنشی ثبت نشده است</string>
+    <string name="inst_empty">قسطی ثبت نشده است</string>
+    <string name="inst_new">قسط جدید</string>
+    <string name="inst_edit">ویرایش قسط</string>
+    <string name="inst_amount">مبلغ هر قسط (تومان)</string>
+    <string name="inst_day">روز ماه</string>
+    <string name="inst_count">تعداد اقساط</string>
+    <string name="inst_first_month">اولین ماه</string>
+    <string name="inst_progress">%1$s از %2$s پرداخت شده</string>
+    <string name="inst_next">قسط بعدی</string>
+    <string name="inst_all_paid">همه پرداخت شده</string>
 </resources>

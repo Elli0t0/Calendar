@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.6]
+
+- Installments tab: JSON store + repository (same pattern as transactions),
+  cards with progress and next due date, expandable paid toggles, add/edit
+  sheet with first-month picker
+- Installment markers (orange) on the calendar via a composite provider;
+  tapping one in the day card opens its edit sheet
+
 ## [0.0.5]
 
 - Calendar day card: "افزودن" button opens the add sheet for the selected

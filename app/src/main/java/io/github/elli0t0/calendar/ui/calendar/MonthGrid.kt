@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
 import io.github.elli0t0.calendar.data.TxRepository
 import io.github.elli0t0.calendar.jalali.Jalali
@@ -41,11 +42,12 @@ fun MonthGrid(
     onSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Subscribe to the transaction flow so the grid recomposes (and the
-    // provider's markers are re-read) whenever a transaction is added,
-    // edited or deleted. Without this read, the pager item content would
-    // be skipped because none of MonthGrid's parameters change.
+    // Subscribe to the transaction and installment flows so the grid
+    // recomposes (and the provider's markers are re-read) whenever one is
+    // added, edited or deleted. Without these reads, the pager item
+    // content would be skipped because none of MonthGrid's parameters change.
     TxRepository.items.collectAsState()
+    InstallmentRepository.items.collectAsState()
     val cells = monthCells(year, month)
     Column(modifier = modifier.fillMaxWidth()) {
         cells.chunked(7).forEach { week ->

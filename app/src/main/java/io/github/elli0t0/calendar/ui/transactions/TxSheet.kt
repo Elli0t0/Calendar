@@ -48,6 +48,9 @@ import io.github.elli0t0.calendar.data.TxType
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.JalaliDate
 import io.github.elli0t0.calendar.jalali.PersianNames
+import io.github.elli0t0.calendar.ui.common.formatGroupedDigits
+import io.github.elli0t0.calendar.ui.common.fullJalaliDate
+import io.github.elli0t0.calendar.ui.common.normalizeDigits
 import io.github.elli0t0.calendar.ui.common.toPersianDigits
 import java.time.LocalDate
 
@@ -56,31 +59,6 @@ private const val MAX_YEAR = 1450
 
 private val IncomeGreen = Color(0xFF43A047)
 private val ExpenseRed = Color(0xFFE53935)
-
-/** Keeps only digits (Persian or English), capped so the value fits in a Long. */
-private fun normalizeDigits(input: String): String {
-    val out = StringBuilder()
-    for (c in input) {
-        when (c) {
-            in '0'..'9' -> out.append(c)
-            in '۰'..'۹' -> out.append('0' + (c - '۰'))
-            in '٠'..'٩' -> out.append('0' + (c - '٠'))
-        }
-    }
-    return out.toString().take(15)
-}
-
-private fun formatGroupedDigits(digits: String): String {
-    if (digits.isEmpty()) return ""
-    val grouped = digits.reversed().chunked(3).joinToString("٬").reversed()
-    return toPersianDigits(grouped)
-}
-
-private fun fullJalaliDate(date: LocalDate): String {
-    val j = Jalali.toJalali(date)
-    return "${PersianNames.weekdayName(date)} ${toPersianDigits(j.day.toString())} " +
-        "${PersianNames.jalaliMonthName(j.month)} ${toPersianDigits(j.year.toString())}"
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

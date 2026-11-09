@@ -14,3 +14,9 @@ interface MarkerProvider {
 class EmptyMarkerProvider : MarkerProvider {
     override fun markersFor(date: LocalDate): List<DayMarker> = emptyList()
 }
+
+/** Merges several providers; markers are concatenated in provider order. */
+class CompositeMarkerProvider(private val providers: List<MarkerProvider>) : MarkerProvider {
+    override fun markersFor(date: LocalDate): List<DayMarker> =
+        providers.flatMap { it.markersFor(date) }
+}

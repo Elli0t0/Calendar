@@ -48,13 +48,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.elli0t0.calendar.R
+import io.github.elli0t0.calendar.data.Installment
+import io.github.elli0t0.calendar.data.InstallmentRepository
 import io.github.elli0t0.calendar.data.MarkerProvider
+import io.github.elli0t0.calendar.data.MarkerType
 import io.github.elli0t0.calendar.data.Transaction
 import io.github.elli0t0.calendar.data.TxRepository
-import io.github.elli0t0.calendar.data.toDayMarker
 import io.github.elli0t0.calendar.jalali.Jalali
 import io.github.elli0t0.calendar.jalali.PersianNames
 import io.github.elli0t0.calendar.jalali.toPersianDigits
+import io.github.elli0t0.calendar.ui.installments.InstallmentSheet
 import io.github.elli0t0.calendar.ui.transactions.TxSheet
 import java.time.LocalDate
 import kotlinx.coroutines.launch
@@ -85,10 +88,13 @@ fun CalendarScreen(
     // Collecting the flow here makes the screen recompose whenever
     // transactions change, so cells and the card below re-read fresh markers.
     val transactions by TxRepository.items.collectAsState()
+    val installments by InstallmentRepository.items.collectAsState()
     val today = remember { LocalDate.now() }
     var selected by remember { mutableStateOf(today) }
     var showSheet by remember { mutableStateOf(false) }
     var editingTx by remember { mutableStateOf<Transaction?>(null) }
+    var showInstSheet by remember { mutableStateOf(false) }
+    var editingInst by remember { mutableStateOf<Installment?>(null) }
     val baseJalali = remember { Jalali.toJalali(today) }
     val pagerState = rememberPagerState(initialPage = 600, pageCount = { 1201 })
     val scope = rememberCoroutineScope()
@@ -189,9 +195,7 @@ fun CalendarScreen(
             label = "selectedDay"
         ) { date ->
             val jalali = Jalali.toJalali(date)
-            val markers = transactions
-                .filter { it.epochDay == date.toEpochDay() }
-                .map { it.toDayMarker() }
+            val markers = markerProvider.markersFor(date)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(28.dp),
@@ -237,15 +241,21 @@ fun CalendarScreen(
                         )
                     } else {
                         markers.forEach { marker ->
-                            val tx = marker.refId?.let { id ->
+                            val isInstallment = marker.type == MarkerType.INSTALLMENT
+                            val tx = if (isInstallment) null else marker.refId?.let { id ->
                                 transactions.firstOrNull { it.id == id }
                             }
-                            val rowModifier = if (tx != null) {
-                                Modifier
+                            val inst = if (isInstallment) marker.refId?.let { id ->
+                                installments.firstOrNull { it.id == id }
+                            } else null
+                            val rowModifier = when {
+                                tx != null -> Modifier
                                     .fillMaxWidth()
                                     .clickable { editingTx = tx; showSheet = true }
-                            } else {
-                                Modifier.fillMaxWidth()
+                                inst != null -> Modifier
+                                    .fillMaxWidth()
+                                    .clickable { editingInst = inst; showInstSheet = true }
+                                else -> Modifier.fillMaxWidth()
                             }
                             Row(
                                 modifier = rowModifier.padding(vertical = 6.dp),
@@ -284,6 +294,12 @@ fun CalendarScreen(
             initial = editingTx,
             initialDate = selected,
             onDismiss = { showSheet = false }
+        )
+    }
+    if (showInstSheet) {
+        InstallmentSheet(
+            initial = editingInst,
+            onDismiss = { showInstSheet = false }
         )
     }
 }
